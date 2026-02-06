@@ -1,0 +1,29 @@
+name: Bug Report
+description: Reporta un error en Mod0.
+title: "[BUG]: "
+body:
+  - type: textarea
+    attributes:
+      label: Descripción
+      description: ¿Qué está fallando?
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Sistema Operativo
+      options:
+        - Windows
+        - macOS
+        - Linux
+  - type: textarea
+    attributes:
+      label: Pasos para reproducir
+      placeholder: |
+        1. Abrir carpeta...
+        2. Click en...
+        3. El IDE se cierra.
+  - type: textarea
+    attributes:
+      label: Logs / Errores
+      description: Pega aquí la salida / respuesta.
+      render: shell
