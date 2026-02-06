@@ -8,7 +8,7 @@ body:
     attributes:
       label: Milestone Relacionado
       options:
-        - label: M1 Code editor
+        - label: M1 Code Editor
         - label: M2 UI Features
         - label: M3 AI Bridge
         - label: M4 MCP Bridge
