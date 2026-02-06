@@ -138,4 +138,4 @@ npm run tauri dev
 npm run tauri build
 ```
 
-<p align="center"> <sub>Autónomo|Autonomic • Agnóstico|Agnostic • Agéntico|Agentic • 2026 • <strong>Mod0 por|by Modus Zero</strong></sub> </p>
+<p align="center"> <sub>Autónomo | Autonomic • Agnóstico | Agnostic • Agéntico | Agentic • 2026 • <strong>Mod0 por | by Modus Zero</strong></sub> </p>
