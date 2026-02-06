@@ -1,0 +1,14 @@
+name: Feature Request
+description: Propón una mejora o nueva función.
+title: "[FEAT]: "
+body:
+  - type: textarea
+    attributes:
+      label: ¿Qué quieres lograr?
+      description: Describe la funcionalidad.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Notas de Implementación
+      description: ¿Alguna idea de cómo hacerlo?
