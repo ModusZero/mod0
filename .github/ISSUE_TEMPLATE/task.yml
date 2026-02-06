@@ -8,11 +8,11 @@ body:
     attributes:
       label: Milestone Relacionado
       options:
-        - label: M1: Code editor
-        - label: M2: UI Features
-        - label: M3: AI Bridge
-        - label: M4: MCP Bridge
-        - label: M5: Refining and FoodDogging
+        - label: M1 Code editor
+        - label: M2 UI Features
+        - label: M3 AI Bridge
+        - label: M4 MCP Bridge
+        - label: M5 Refining and FoodDogging
   - type: textarea
     id: description
     attributes:
