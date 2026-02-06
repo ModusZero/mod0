@@ -1,0 +1,37 @@
+name: Task Item
+description: Implementación de lógica o componentes.
+title: "[TASK]: "
+labels: ["backlog", "development"]
+body:
+  - type: checkboxes
+    id: milestone
+    attributes:
+      label: Milestone Relacionado
+      options:
+        - label: M1: Code editor
+        - label: M2: UI Features
+        - label: M3: AI Bridge
+        - label: M4: MCP Bridge
+        - label: M5: Refining and FoodDogging
+  - type: textarea
+    id: description
+    attributes:
+      label: Descripción del Objetivo
+      placeholder: ¿Qué es exactamente lo que vamos a construir?
+    validations:
+      required: true
+  - type: textarea
+    id: rust-tasks
+    attributes:
+      label: Implementación Rust (Backend)
+      placeholder: Lista de comandos Tauri, structs o módulos necesarios.
+  - type: textarea
+    id: svelte-tasks
+    attributes:
+      label: Implementación Svelte (Frontend)
+      placeholder: Runes, componentes o estilos CSS.
+  - type: input
+    id: test-plan
+    attributes:
+      label: Plan de Pruebas
+      placeholder: ¿Cómo sabemos que funciona?
