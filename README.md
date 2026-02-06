@@ -3,12 +3,14 @@
 <table width="100%" border="0">
   <tr>
     <td>
+      <h3>[ES]</h3>
       <p>
-        <strong>[ES]</strong> Mod0 es un IDE Autónomo, Agnóstico y Agéntico diseñado para el paradigma <strong>Mind-to-Action</strong>. Desarrollado por <strong>Modus Zero</strong>, permite liderar enjambres de IA con precisión quirúrgica, eliminando la fricción entre la intención y la ejecución.
+        Mod0 es un IDE Autónomo, Agnóstico y Agéntico diseñado para el paradigma <strong>Mind-to-Action</strong>. Desarrollado por <strong>Modus Zero</strong>, permite liderar enjambres de IA con precisión quirúrgica, eliminando la fricción entre la intención y la ejecución.
       </p>
       <hr size="1" style="border:none; border-top:1px solid #30363d;" />
+      <h3>[EN]</h3>
       <p>
-        <strong>[EN]</strong> Mod0 is an Autonomic, Agnostic, and Agentic IDE built for the <strong>Mind-to-Action</strong> paradigm. Developed by <strong>Modus Zero</strong>, it enables developers to lead AI swarms with surgical precision, removing friction between intent and execution.
+        Mod0 is an Autonomic, Agnostic, and Agentic IDE built for the <strong>Mind-to-Action</strong> paradigm. Developed by <strong>Modus Zero</strong>, it enables developers to lead AI swarms with surgical precision, removing friction between intent and execution.
       </p>
     </td>
     <td align="right" width="250">
