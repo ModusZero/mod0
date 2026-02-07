@@ -1,4 +1,4 @@
-import type { EditorFile } from '$lib/types/editor';
+import type { EditorFile } from '$lib/types/file-editor';
 
 class EditorStack {
     tabs = $state<EditorFile[]>([]);

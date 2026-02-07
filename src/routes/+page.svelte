@@ -7,20 +7,16 @@
     }
 </script>
 
-<main class="flex h-[80vh] flex-col items-center justify-center font-sans">
-    <h1 class="text-4xl font-bold mb-4">
-        Mod0 <small class="text-sm opacity-50">v0.1.0</small>
-    </h1>
-    
-    <div class="p-8 border border-white/10 rounded-xl bg-white/5 backdrop-blur-sm">
-        <p class="mb-2">Tema: <span class="text-accent font-mono font-bold uppercase">{configStack.current.theme}</span></p>
-        <p class="mb-6 opacity-80 text-sm italic">Persistencia activa en Rust</p>
+<main class="flex h-[80vh] flex-col items-center justify-center">
+    <div class="p-10 border border-black/10 dark:border-white/10 rounded-2xl bg-white dark:bg-[#121214] shadow-2xl transition-all duration-500">
+        <h1 class="text-3xl font-black mb-2 text-black dark:text-white">MOD0 SYSTEM</h1>
+        <p class="mb-8 text-black/40 dark:text-white/40 font-mono text-sm uppercase tracking-tighter">Theme engine v1.0.4</p>
         
         <button 
             onclick={toggleTheme}
-            class="w-full py-2 px-6 rounded-lg bg-accent text-white font-semibold hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-accent/20"
+            class="w-full py-4 px-8 rounded-xl bg-accent text-white font-bold hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-accent/20"
         >
-            Cambiar a tema {configStack.current.theme === "dark" ? "Claro" : "Oscuro"}
+            PASAR A MODO {configStack.current.theme === "dark" ? "CLARO" : "OSCURO"}
         </button>
     </div>
 </main>

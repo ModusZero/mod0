@@ -1,49 +1,75 @@
-import type { AppMode, ActivityType } from '$lib/types/editor';
+import { 
+    WorkSectionIDs, 
+    ActivityByWork 
+} from '$lib/constants/ui';
+import type { 
+    WorkSectionID, 
+    ActivityID 
+} from '$lib/types/ui';
 
 /**
- * Definición de la correspondencia entre Modos y sus Actividades disponibles.
+ * UIStack centraliza el estado de navegación global.
+ * Utiliza el patrón de "Registry" para evitar condicionales innecesarios.
  */
-const MODE_ACTIVITIES: Record<AppMode, ActivityType[]> = {
-    blueprint: ['kanban', 'erd', 'flow'],
-    forge: ['sandbox', 'agents', 'explorer'],
-    pulse: ['graph', 'explorer', 'skills', 'git']
-};
-
 class UIStack {
-    /** @type {AppMode} Modo maestro actual */
-    mode = $state<AppMode>('blueprint');
+    /** * @type {WorkSectionID} Sección maestra actual (Blueprint, Forge, etc.)
+     */
+    mode: WorkSectionID = $state<WorkSectionID>(WorkSectionIDs.BLUEPRINT);
     
-    /** @type {ActivityType} Actividad sidebar activa */
-    activeActivity = $state<ActivityType>('kanban');
+    /** * @type {ActivityID} Identificador de la actividad activa en el Sidebar
+     */
+    activeActivity: ActivityID = $state<ActivityID>(ActivityByWork[WorkSectionIDs.BLUEPRINT][0]);
     
-    /** @type {boolean} Control de visibilidad del sidebar */
-    sidebarOpen = $state(true);
+    /** * @type {boolean} Estado de expansión del panel lateral
+     */
+    sidebarOpen: boolean = $state(true);
 
     /**
-     * Obtiene las actividades disponibles para el modo actual.
-     * @returns {ActivityType[]}
+     * Propiedad derivada que devuelve las actividades válidas para el modo actual.
+     * @returns {ActivityID[]}
      */
-    get currentActivities(): ActivityType[] {
-        return MODE_ACTIVITIES[this.mode];
+    get currentActivities(): ActivityID[] {
+        return ActivityByWork[this.mode];
     }
 
     /**
-     * Cambia el modo maestro y reinicia la actividad a la primera disponible del modo.
-     * @param {AppMode} newMode 
+     * Transiciona el IDE a un nuevo modo de trabajo.
+     * Reinicia automáticamente la actividad a la primera disponible del nuevo modo.
+     * * @param {WorkSectionID} newMode - El identificador de la sección deseada.
      */
-    setMode(newMode: AppMode) {
+    setMode(newMode: WorkSectionID) {
+        if (this.mode === newMode) return;
+
         this.mode = newMode;
-        this.activeActivity = MODE_ACTIVITIES[newMode][0];
+        
+        // Selección inteligente de actividad:
+        // Si el nuevo modo tiene actividades, seleccionamos la primera.
+        const activities = ActivityByWork[newMode];
+        if (activities && activities.length > 0) {
+            this.activeActivity = activities[0];
+        }
+        
+        this.sidebarOpen = true;
     }
 
     /**
-     * Cambia la actividad del sidebar.
-     * @param {ActivityType} activity 
+     * Cambia la actividad activa del sidebar y asegura que sea visible.
+     * * @param {ActivityID} activity - ID de la actividad a mostrar.
      */
-    setActivity(activity: ActivityType) {
+    setActivity(activity: ActivityID) {
         this.activeActivity = activity;
         this.sidebarOpen = true;
     }
+
+    /**
+     * Alterna la visibilidad del sidebar para maximizar el área de trabajo.
+     */
+    toggleSidebar() {
+        this.sidebarOpen = !this.sidebarOpen;
+    }
 }
 
+/**
+ * Instancia única del estado de UI para toda la aplicación.
+ */
 export const uiStack = new UIStack();

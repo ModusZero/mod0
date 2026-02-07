@@ -1,18 +1,4 @@
 /**
- * Modos de operación principales del IDE.
- */
-export type AppMode = 'blueprint' | 'forge' | 'pulse';
-
-/**
- * Actividades disponibles en el sistema.
- */
-export type ActivityType = 
-    | 'explorer' | 'search' | 'git' | 'extensions' 
-    | 'erd' | 'flow' | 'kanban' 
-    | 'sandbox' | 'agents' 
-    | 'graph' | 'skills';
-
-/**
  * Define la estructura de un archivo en memoria.
  */
 export interface EditorFile {

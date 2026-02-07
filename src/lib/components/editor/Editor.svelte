@@ -9,49 +9,32 @@
 
     let editorElement: HTMLDivElement;
     let view: EditorView;
-    
-    const themeConfig = new Compartment();
+    const themeConf = new Compartment();
 
     onMount(() => {
         view = new EditorView({
             doc: editorStack.activeFile?.content || "",
             extensions: [
                 basicSetup,
-                themeConfig.of(oneDark), // Iniciar con tema oscuro
+                themeConf.of(configStack.current.theme === 'dark' ? oneDark : []),
                 javascript(),
-                EditorView.updateListener.of((update) => {
-                    if (update.docChanged) {
-                        editorStack.updateContent(update.state.doc.toString());
-                    }
+                EditorView.updateListener.of((u) => {
+                    if (u.docChanged) editorStack.updateContent(u.state.doc.toString());
                 })
             ],
             parent: editorElement
         });
     });
 
-    // Reaccionar al cambio de archivo activo (Efecto de Svelte 5)
     $effect(() => {
-        const content = editorStack.activeFile?.content;
-        if (view && content !== undefined && content !== view.state.doc.toString()) {
+        if (view) {
             view.dispatch({
-                changes: { from: 0, to: view.state.doc.length, insert: content }
+                effects: themeConf.reconfigure(configStack.current.theme === 'dark' ? oneDark : [])
             });
         }
     });
 
-    onDestroy(() => {
-        if (view) view.destroy();
-    });
+    onDestroy(() => view?.destroy());
 </script>
 
-<div class="h-full w-full bg-[#1e1e1e]" bind:this={editorElement}></div>
-
-<style>
-    :global(.cm-editor) {
-        height: 100%;
-        outline: none !important;
-    }
-    :global(.cm-scroller) {
-        font-family: 'Fira Code', 'JetBrains Mono', monospace;
-    }
-</style>
+<div class="h-full w-full border-t border-black/5 dark:border-white/5" bind:this={editorElement}></div>

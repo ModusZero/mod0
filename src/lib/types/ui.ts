@@ -1,17 +1,17 @@
-/**
- * @fileoverview Tipos fundamentales para el sistema de navegación y modos de Mod0.
- */
+import type { WorkSectionIDs } from "$lib/constants/ui";
+import { ActivityIDs } from '../constants/ui';
 
-/** Modos principales de operación del IDE */
-export type IDEMode = 'BLUEPRINT' | 'FORGE' | 'PULSE';
+/** Tipo de modo de trabajo del IDE */
+export type WorkSectionID = typeof WorkSectionIDs[keyof typeof WorkSectionIDs];
 
-/** IDs de actividades disponibles en el ActivityBar */
-export type ActivityID = 'explorer' | 'search' | 'git' | 'architecture' | 'forge-tools' | 'metrics';
+/** Tipo de identificador de actividad */
+export type ActivityID = typeof ActivityIDs[keyof typeof ActivityIDs];
 
-/** Estructura de una actividad vinculada a un modo */
-export interface Activity {
-    id: ActivityID;
-    icon: string;
+/** Estructura de una nodo desplegable ({@link WorkSectionID} o {@link ActivityID}) */
+export interface DisplayNode {
+    id: string;
     label: string;
-    mode: IDEMode;
+    icon: any;
+    color?: string;
+    description?: string;
 }
