@@ -24,13 +24,9 @@ class UIStack {
      */
     sidebarOpen: boolean = $state(true);
 
-    /**
-     * Propiedad derivada que devuelve las actividades válidas para el modo actual.
-     * @returns {ActivityID[]}
+    /** * @type {ActivityID[]} Lista de actividades disponibles para la sección actual
      */
-    get currentActivities(): ActivityID[] {
-        return ActivityByWork[this.mode];
-    }
+    currentActivities: ActivityID[] = $state<ActivityID[]>(ActivityByWork[WorkSectionIDs.BLUEPRINT]);
 
     /**
      * Transiciona el IDE a un nuevo modo de trabajo.
@@ -41,12 +37,10 @@ class UIStack {
         if (this.mode === newMode) return;
 
         this.mode = newMode;
-        
-        // Selección inteligente de actividad:
-        // Si el nuevo modo tiene actividades, seleccionamos la primera.
-        const activities = ActivityByWork[newMode];
-        if (activities && activities.length > 0) {
-            this.activeActivity = activities[0];
+        this.currentActivities = ActivityByWork[newMode];
+
+        if (this.currentActivities && this.currentActivities.length > 0) {
+            this.activeActivity = this.currentActivities[0];
         }
         
         this.sidebarOpen = true;

@@ -3,26 +3,27 @@
     import { cubicInOut } from 'svelte/easing';
     import { uiStack } from "$lib/runes/ui.svelte";
     import { ActivityVisual } from "$lib/constants/ui";
+    import { type DisplayNode } from '$lib/types/ui';
 
     let activities = $derived(uiStack.currentActivities);
 </script>
 
-<aside class="w-14 flex flex-col items-center py-6 bg-sidebar border-r border-black/8 dark:border-white/5 z-40 relative select-none">
+<aside class="w-14 flex flex-col items-center py-6 bg-sidebar border-r border-border-subtle z-40 relative select-none">
     <div class="mb-10 w-8 h-8 rounded-xl bg-accent/10 flex items-center justify-center border border-accent/20">
         <div class="w-3 h-3 rounded-full bg-accent shadow-[0_0_10px_var(--accent)]"></div>
     </div>
 
     <nav class="flex-1 flex flex-col gap-4 w-full items-center">
         {#each activities as activityId, i (activityId)}
-            {@const activity = ActivityVisual[activityId]}
+            {@const activity: DisplayNode = ActivityVisual[activityId]}
             {#if activity}
-                {@const isActive = uiStack.activeActivity === activityId}
-                
+                {@const isActive: boolean = uiStack.activeActivity === activityId}
                 <div in:fly={{ y: 8, duration: 400, delay: i * 40, easing: cubicInOut }}>
                     <button 
                         onclick={() => uiStack.setActivity(activityId)}
+                        aria-label="Actividad: {activity.label}"
                         class="group relative flex items-center justify-center w-12 h-12 transition-all duration-300
-                        {isActive ? 'text-accent' : 'text-black/40 dark:text-white/30 hover:text-black dark:hover:text-white'}"
+                        {isActive ? 'text-accent' : 'text-text/40 hover:text-text'}"
                     >
                         {#if isActive}
                             <div 
@@ -35,7 +36,7 @@
                             <activity.icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
                         </div>
 
-                        <span class="absolute left-16 bg-white dark:bg-[#18181b] text-black dark:text-white border border-black/10 dark:border-white/10 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0 shadow-xl pointer-events-none z-50">
+                        <span class="absolute left-16 bg-sidebar text-text border border-border-subtle px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0 shadow-xl pointer-events-none z-50">
                             {activity.label}
                         </span>
                     </button>

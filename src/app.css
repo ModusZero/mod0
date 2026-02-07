@@ -4,6 +4,8 @@
   --color-main: var(--bg-main);
   --color-sidebar: var(--bg-sidebar);
   --color-accent: var(--accent);
+  --color-text: var(--text-main);
+  --color-border-subtle: var(--border-subtle);
 }
 
 @layer base {
@@ -12,18 +14,21 @@
     --bg-sidebar: #f8f8f9;
     --text-main: #09090b;
     --accent: #2563eb;
+    --border-subtle: rgba(0, 0, 0, 0.1);
   }
 
-  :root.dark {
+  .dark {
     --bg-main: #09090b;
     --bg-sidebar: #121214;
     --text-main: #f4f4f5;
     --accent: #3b82f6;
+    --border-subtle: rgba(255, 255, 255, 0.1);
   }
 
   body {
-    @apply bg-main text-(--text-main) transition-colors duration-300;
     background-color: var(--bg-main);
     color: var(--text-main);
+    transition: background-color 0.3s, color 0.3s;
+    @apply antialiased;
   }
 }

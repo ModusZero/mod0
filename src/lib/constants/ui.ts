@@ -73,14 +73,14 @@ export const WorkSectionVisual: Record<WorkSectionID, DisplayNode> = {
 
 export const ActivityVisual: Record<ActivityID, DisplayNode> = {
     // Blueprint
-    CHAT: {
+    [ActivityIDs.CHAT]: {
         id: ActivityIDs.CHAT, 
         label: 'Chat',
         icon: MessageSquare, 
         color: 'text-blue-400',
         description: 'Engage in real-time conversations with your team and AI assistants in the Chat activity. Collaborate, brainstorm, and get instant feedback to keep your projects moving forward.'
     },
-    ARTIFACTS: { 
+    [ActivityIDs.ARTIFACTS]: { 
         id: ActivityIDs.ARTIFACTS, 
         label: 'Artifacts', 
         icon: Box, 
@@ -89,14 +89,14 @@ export const ActivityVisual: Record<ActivityID, DisplayNode> = {
     },
 
     // Forge
-    THINKING_GRAPH: { 
+    [ActivityIDs.THINKING_GRAPH]: { 
         id: ActivityIDs.THINKING_GRAPH, 
         label: 'Thinking Graph', 
         icon: GitBranch, 
         color: 'text-purple-400',
         description: 'Visualize and analyze your project\'s thinking process in the Thinking Graph activity. Understand how ideas evolve and connect to build better projects.' 
     },
-    KANBAN: { 
+    [ActivityIDs.KANBAN]: { 
         id: ActivityIDs.KANBAN, 
         label: 'Kanban Board', 
         icon: ClipboardList, 
@@ -105,14 +105,14 @@ export const ActivityVisual: Record<ActivityID, DisplayNode> = {
     },
     
     // Pulse
-    FILES: { 
+    [ActivityIDs.FILES]: { 
         id: ActivityIDs.FILES, 
         label: 'Files', 
         icon: Folder, 
         color: 'text-gray-400',
         description: 'Browse and manage your project files in the Files activity. View file hierarchies, access metadata, and organize your project assets efficiently.' 
     },
-    SOURCE_CONTROL: { 
+    [ActivityIDs.SOURCE_CONTROL]: { 
         id: ActivityIDs.SOURCE_CONTROL, 
         label: 'Source Control', 
         icon: GitBranch, 
@@ -121,21 +121,21 @@ export const ActivityVisual: Record<ActivityID, DisplayNode> = {
     },
 
     // Configuration
-    CONTEXT: { 
+    [ActivityIDs.CONTEXT]: { 
         id: ActivityIDs.CONTEXT, 
         label: 'Context', 
         icon: MessageSquare, 
         color: 'text-gray-400',
         description: 'Manage your context and preferences in the Context activity. Customize your workspace and tailor your development environment to suit your needs.' 
     },
-    WORKFLOW: { 
+    [ActivityIDs.WORKFLOW]: { 
         id: ActivityIDs.WORKFLOW, 
         label: 'Workflow', 
         icon: GitGraph, 
         color: 'text-blue-400',
         description: 'Define and manage your project workflows in the Workflow activity. Create custom workflows that match your team\'s processes and requirements.' 
     },
-    EXTENSIONS: { 
+    [ActivityIDs.EXTENSIONS]: { 
         id: ActivityIDs.EXTENSIONS, 
         label: 'Extensions', 
         icon: Puzzle, 
@@ -146,21 +146,21 @@ export const ActivityVisual: Record<ActivityID, DisplayNode> = {
 
 export const ActivityByWork: Record<WorkSectionID, ActivityID[]> = {
     [WorkSectionIDs.BLUEPRINT]: [
-        ActivityIDs.FILES,
-        ActivityIDs.SOURCE_CONTROL,
-        ActivityIDs.EXTENSIONS
-    ],
-    [WorkSectionIDs.FORGE]: [
         ActivityIDs.CHAT,
         ActivityIDs.ARTIFACTS,
-        ActivityIDs.THINKING_GRAPH
     ],
-    [WorkSectionIDs.PULSE]: [
+    [WorkSectionIDs.FORGE]: [
         ActivityIDs.THINKING_GRAPH,
         ActivityIDs.KANBAN
     ],
+    [WorkSectionIDs.PULSE]: [
+        ActivityIDs.FILES,
+        ActivityIDs.SOURCE_CONTROL,
+    ],
     [WorkSectionIDs.CONFIGURATION]: [
-        ActivityIDs.CHAT,
-        ActivityIDs.KANBAN
+        ActivityIDs.CONTEXT,
+        ActivityIDs.WORKFLOW,
+        ActivityIDs.EXTENSIONS
+
     ]
 };
