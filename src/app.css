@@ -10,14 +10,14 @@
   :root {
     --bg-main: #ffffff;
     --bg-sidebar: #f8f8f9;
-    --text-main: #09090b; /* Casi negro */
+    --text-main: #09090b;
     --accent: #2563eb;
   }
 
   :root.dark {
-    --bg-main: #09090b; /* Casi negro */
+    --bg-main: #09090b;
     --bg-sidebar: #121214;
-    --text-main: #f4f4f5; /* Blanco grisáceo */
+    --text-main: #f4f4f5;
     --accent: #3b82f6;
   }
 
