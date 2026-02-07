@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import { TAURI_COMMANDS } from "$lib/constants";
+import { TAURI_COMMANDS } from "$lib/constants/tauri-commands";
 
 export interface AppConfig {
     theme: string;

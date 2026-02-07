@@ -1,0 +1,32 @@
+@import "tailwindcss";
+
+@theme {
+  --color-main: var(--bg-main);
+  --color-sidebar: var(--bg-sidebar);
+  --color-accent: var(--accent);
+}
+
+@layer base {
+  :root {
+    --bg-main: #ffffff;
+    --bg-sidebar: #f5f5f5;
+    --text-main: #121212;
+    --accent: #2563eb;
+  }
+
+  :root.dark {
+    --bg-main: #0a0a0b;
+    --bg-sidebar: #111112;
+    --text-main: #e2e2e3;
+    --accent: #396cd8;
+  }
+
+  body {
+    @apply bg-main text-[var(--text-main)] overflow-hidden transition-colors duration-200;
+    background-color: var(--bg-main);
+  }
+}
+
+.bg-sidebar { background-color: var(--bg-sidebar); }
+.bg-main { background-color: var(--bg-main); }
+.bg-accent { background-color: var(--accent); }
