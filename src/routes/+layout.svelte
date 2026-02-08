@@ -4,8 +4,8 @@
     import Header from "$lib/components/layout/Header.svelte";
     import Sidebar from "$lib/components/layout/Sidebar.svelte";
     import Footer from "$lib/components/layout/Footer.svelte";
-    import Terminal from "$lib/components/editor/Terminal.svelte";
-    import Settings from "$lib/components/settings/Settings.svelte";
+    import Terminal from "$lib/features/terminal/Terminal.svelte";
+    import Settings from "$lib/components/settings(future-migration)/Settings.svelte";
 
     let { children } = $props();
 </script>

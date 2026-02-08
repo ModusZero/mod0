@@ -1,10 +1,10 @@
 <script lang="ts">
-    import ModeSelector from "$lib/components/layout/ModeSelector.svelte";
-    import { settingsStack } from "$lib/runes/settings.svelte";
+    import { fade } from 'svelte/transition';
     import lightLogo from "$lib/assets/logo-light.svg";
     import darkLogo from "$lib/assets/logo-dark.svg";
-    import { fade } from 'svelte/transition';
-  import { toggleUIStack } from "$lib/runes/toggle-ui.svelte";
+    import { settingsStack } from "$lib/features/settings/settings-runes.svelte";
+    import { toggleUIStack } from "$lib/core/runes/toggle-ui.svelte";
+    import ModeSelector from "../../features/workbench/command-center/ModeSelector.svelte";
     
     const headerOptions: { label: string; func: () => void }[] = [
         { label: "Archivo", func: () => console.log("Archivo") },

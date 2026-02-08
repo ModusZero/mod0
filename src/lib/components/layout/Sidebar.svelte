@@ -1,22 +1,29 @@
 <script lang="ts">
-    import { workStack } from "$lib/runes/work-config.svelte";
-    import { ActivityIDs, ActivityVisual } from "$lib/constants/ui-config";
-    import { toggleUIStack } from "$lib/runes/toggle-ui.svelte";
-    import type { ActivityID } from "$lib/types/work";
+    import { workStack } from "$lib/core/runes/work-runes.svelte";
+    import { toggleUIStack } from "$lib/core/runes/toggle-ui.svelte";
+    import { ActivityIDs, ActivityVisual } from "$lib/core/constants/work-config";
+    import type { ActivityID } from "$lib/core/types/work";
+
+    const systemsImportRoute = '$lib/systems';
+    const blueprintImportRoute = `${systemsImportRoute}/blueprint`;
+    const forgeImportRoute = `${systemsImportRoute}/forge`;
+    const pulseImportRoute = `${systemsImportRoute}/pulse`;
+    const workspaceImportRoute = `${systemsImportRoute}/workspace`;
 
     const SidebarByActivity: Record<ActivityID, any> = {
-        [ActivityIDs.CHAT]: import("$lib/components/layout/activity-sidebars/ChatSidebar.svelte"),
-        [ActivityIDs.ARTIFACTS]: import("$lib/components/layout/activity-sidebars/ArtifactsSidebar.svelte"),
+        [ActivityIDs.CHAT]: import(`${blueprintImportRoute}/chat/ChatSidebar.svelte`),
+        [ActivityIDs.ARTIFACTS]: import(`${blueprintImportRoute}/artifacts/ArtifactsSidebar.svelte`),
         
-        [ActivityIDs.THINKING_GRAPH]: import("$lib/components/layout/activity-sidebars/ThinkingGraphSidebar.svelte"),
-        [ActivityIDs.KANBAN]: import("$lib/components/layout/activity-sidebars/KanbanSidebar.svelte"),
+        [ActivityIDs.THINKING_GRAPH]: import(`${forgeImportRoute}/thinking-graph/ThinkingGraphSidebar.svelte`),
+        [ActivityIDs.KANBAN]: import(`${forgeImportRoute}/kanban/KanbanSidebar.svelte`),
+        [ActivityIDs.TESTING]: import(`${forgeImportRoute}/testing/TestingSidebar.svelte`),
 
-        [ActivityIDs.FILES]: import("$lib/components/layout/activity-sidebars/FilesSidebar.svelte"),
-        [ActivityIDs.SOURCE_CONTROL]: import("$lib/components/layout/activity-sidebars/SourceControlSidebar.svelte"),
+        [ActivityIDs.FILES]: import(`${pulseImportRoute}/files/FilesSidebar.svelte`),
+        [ActivityIDs.SOURCE_CONTROL]: import(`${pulseImportRoute}/source-control/SourceControlSidebar.svelte`),
 
-        [ActivityIDs.WORKFLOW]: import("$lib/components/layout/activity-sidebars/WorkflowSidebar.svelte"),
-        [ActivityIDs.CONTEXT]: import("$lib/components/layout/activity-sidebars/ContextSidebar.svelte"),
-        [ActivityIDs.EXTENSIONS]: import("$lib/components/layout/activity-sidebars/ExtensionsSidebar.svelte"),
+        [ActivityIDs.WORKFLOW]: import(`${workspaceImportRoute}/workflow/WorkflowSidebar.svelte`),
+        [ActivityIDs.CONTEXT]: import(`${workspaceImportRoute}/context/ContextSidebar.svelte`),
+        [ActivityIDs.EXTENSIONS]: import(`${workspaceImportRoute}/extensions/ExtensionsSidebar.svelte`),
     };
 </script>
 
