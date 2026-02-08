@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { configStack } from "$lib/runes/config.svelte";
-    import { uiStack } from "$lib/runes/ui.svelte";
+    import { settingsStack } from "$lib/runes/settings.svelte";
+    import { workStack } from "$lib/runes/work-config.svelte";
 </script>
 
 <footer class="h-7 border-t border-border-subtle bg-sidebar flex items-center px-3 justify-between text-[10px]">
@@ -13,8 +13,8 @@
     
     <div class="flex gap-4 items-center">
         <span class="bg-accent/10 text-accent px-2 py-0.5 rounded font-bold uppercase tracking-tighter">
-            {uiStack.mode}
+            {workStack.mode}
         </span>
-        <span class="text-text/40 uppercase font-bold">{configStack.current.theme} mode</span>
+        <span class="text-text/40 uppercase font-bold">{settingsStack.current.theme} mode</span>
     </div>
 </footer>

@@ -1,5 +1,5 @@
-import type { WorkSectionIDs } from "$lib/constants/ui";
-import { ActivityIDs } from '../constants/ui';
+import type { WorkSectionIDs } from "$lib/constants/ui-config";
+import { ActivityIDs } from '../constants/ui-config';
 
 /** Tipo de modo de trabajo del IDE */
 export type WorkSectionID = typeof WorkSectionIDs[keyof typeof WorkSectionIDs];

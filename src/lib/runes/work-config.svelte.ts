@@ -1,17 +1,18 @@
 import { 
     WorkSectionIDs, 
     ActivityByWork 
-} from '$lib/constants/ui';
+} from '$lib/constants/ui-config';
 import type { 
     WorkSectionID, 
     ActivityID 
-} from '$lib/types/ui';
+} from '$lib/types/work';
+import { toggleUIStack } from './toggle-ui.svelte';
 
 /**
  * UIStack centraliza el estado de navegación global.
  * Utiliza el patrón de "Registry" para evitar condicionales innecesarios.
  */
-class UIStack {
+class WorkStack {
     /** * @type {WorkSectionID} Sección maestra actual (Blueprint, Forge, etc.)
      */
     mode: WorkSectionID = $state<WorkSectionID>(WorkSectionIDs.BLUEPRINT);
@@ -19,10 +20,6 @@ class UIStack {
     /** * @type {ActivityID} Identificador de la actividad activa en el Sidebar
      */
     activeActivity: ActivityID = $state<ActivityID>(ActivityByWork[WorkSectionIDs.BLUEPRINT][0]);
-    
-    /** * @type {boolean} Estado de expansión del panel lateral
-     */
-    sidebarOpen: boolean = $state(true);
 
     /** * @type {ActivityID[]} Lista de actividades disponibles para la sección actual
      */
@@ -42,8 +39,7 @@ class UIStack {
         if (this.currentActivities && this.currentActivities.length > 0) {
             this.activeActivity = this.currentActivities[0];
         }
-        
-        this.sidebarOpen = true;
+
     }
 
     /**
@@ -52,18 +48,11 @@ class UIStack {
      */
     setActivity(activity: ActivityID) {
         this.activeActivity = activity;
-        this.sidebarOpen = true;
-    }
-
-    /**
-     * Alterna la visibilidad del sidebar para maximizar el área de trabajo.
-     */
-    toggleSidebar() {
-        this.sidebarOpen = !this.sidebarOpen;
+        toggleUIStack.sidebarOpen = true;
     }
 }
 
 /**
  * Instancia única del estado de UI para toda la aplicación.
  */
-export const uiStack = new UIStack();
+export const workStack = new WorkStack();

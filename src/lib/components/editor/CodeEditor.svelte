@@ -1,25 +1,27 @@
 <script lang="ts">
     import { onMount, onDestroy } from 'svelte';
     import { EditorView, basicSetup } from 'codemirror';
-    import { Compartment } from '@codemirror/state';
     import { javascript } from '@codemirror/lang-javascript';
     import { oneDark } from '@codemirror/theme-one-dark';
-    import { editorStack } from '$lib/runes/editor.svelte';
-    import { configStack } from '$lib/runes/config.svelte';
+    import { Compartment } from '@codemirror/state';
+    import { settingsStack } from '$lib/runes/settings.svelte';
 
+    let { content = "" } = $props();
     let editorElement: HTMLDivElement;
     let view: EditorView;
     const themeConf = new Compartment();
 
     onMount(() => {
         view = new EditorView({
-            doc: editorStack.activeFile?.content || "",
+            doc: content,
             extensions: [
                 basicSetup,
-                themeConf.of(configStack.current.theme === 'dark' ? oneDark : []),
                 javascript(),
-                EditorView.updateListener.of((u) => {
-                    if (u.docChanged) editorStack.updateContent(u.state.doc.toString());
+                themeConf.of(settingsStack.current.theme === 'dark' ? oneDark : []),
+                EditorView.theme({
+                    "&": { height: "100%", fontSize: "13px" },
+                    ".cm-scroller": { fontFamily: "'JetBrains Mono', monospace" },
+                    "&.cm-focused": { outline: "none" }
                 })
             ],
             parent: editorElement
@@ -29,7 +31,7 @@
     $effect(() => {
         if (view) {
             view.dispatch({
-                effects: themeConf.reconfigure(configStack.current.theme === 'dark' ? oneDark : [])
+                effects: themeConf.reconfigure(settingsStack.current.theme === 'dark' ? oneDark : [])
             });
         }
     });
@@ -37,4 +39,4 @@
     onDestroy(() => view?.destroy());
 </script>
 
-<div class="h-full w-full border-t border-black/5 dark:border-white/5" bind:this={editorElement}></div>
+<div class="h-full w-full overflow-hidden cursor-auto" bind:this={editorElement}></div>

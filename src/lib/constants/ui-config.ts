@@ -10,7 +10,7 @@ import {
     ClipboardList, 
     MessageSquare 
 } from 'lucide-svelte';
-import type { ActivityID, DisplayNode, WorkSectionID } from "$lib/types/ui";
+import type { ActivityID, DisplayNode, WorkSectionID } from "$lib/types/work";
 
 /** Identificadores de secciones operativas del IDE */
 export const WorkSectionIDs = {

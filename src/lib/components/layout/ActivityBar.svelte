@@ -1,26 +1,29 @@
 <script lang="ts">
     import { fade, fly } from 'svelte/transition';
     import { cubicInOut } from 'svelte/easing';
-    import { uiStack } from "$lib/runes/ui.svelte";
-    import { ActivityVisual } from "$lib/constants/ui";
-    import { type DisplayNode } from '$lib/types/ui';
+    import { workStack } from "$lib/runes/work-config.svelte";
+    import { ActivityVisual } from "$lib/constants/ui-config";
+    import { type DisplayNode } from '$lib/types/work';
+  import { toggleUIStack } from '$lib/runes/toggle-ui.svelte';
 
-    let activities = $derived(uiStack.currentActivities);
+    let activities = $derived(workStack.currentActivities);
 </script>
 
-<aside class="w-14 flex flex-col items-center py-6 bg-sidebar border-r border-border-subtle z-40 relative select-none">
-    <div class="mb-10 w-8 h-8 rounded-xl bg-accent/10 flex items-center justify-center border border-accent/20">
-        <div class="w-3 h-3 rounded-full bg-accent shadow-[0_0_10px_var(--accent)]"></div>
-    </div>
-
+<aside class="w-14 flex flex-col items-center bg-sidebar border-r border-border-subtle z-40 relative select-none">
     <nav class="flex-1 flex flex-col gap-4 w-full items-center">
         {#each activities as activityId, i (activityId)}
             {@const activity: DisplayNode = ActivityVisual[activityId]}
             {#if activity}
-                {@const isActive: boolean = uiStack.activeActivity === activityId}
+                {@const isActive: boolean = workStack.activeActivity === activityId}
                 <div in:fly={{ y: 8, duration: 400, delay: i * 40, easing: cubicInOut }}>
                     <button 
-                        onclick={() => uiStack.setActivity(activityId)}
+                        onclick={() => {
+                            if (isActive) {
+                                toggleUIStack.toggleSidebar();
+                            } else {
+                                workStack.setActivity(activityId)
+                            }
+                            }}
                         aria-label="Actividad: {activity.label}"
                         class="group relative flex items-center justify-center w-12 h-12 transition-all duration-300
                         {isActive ? 'text-accent' : 'text-text/40 hover:text-text'}"
