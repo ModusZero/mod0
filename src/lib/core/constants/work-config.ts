@@ -160,11 +160,11 @@ export const ActivityByWork: Record<WorkSectionID, ActivityID[]> = {
     ],
     [WorkSectionIDs.FORGE]: [
         ActivityIDs.THINKING_GRAPH,
+        ActivityIDs.TESTING,
         ActivityIDs.KANBAN
     ],
     [WorkSectionIDs.PULSE]: [
         ActivityIDs.FILES,
-        ActivityIDs.TESTING,
         ActivityIDs.SOURCE_CONTROL,
     ],
     [WorkSectionIDs.WORKSPACE]: [

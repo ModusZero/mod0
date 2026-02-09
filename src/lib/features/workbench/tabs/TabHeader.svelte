@@ -13,7 +13,7 @@
 
 <div 
     class="h-9 flex items-center gap-2 px-3 border-r border-border-subtle transition-colors group relative min-w-30 max-w-50
-    {active ? 'bg-main text-text' : 'bg-sidebar/30 text-text/40 hover:bg-sidebar/50'} cursor-pointer"
+    {active ? 'bg-main text-text' : 'bg-sidebar/30 text-text/40 hover:bg-sidebar/50'} cursor-default"
 >
     {#if Icon}
         <Icon size={14} class={iconColor} />
@@ -29,7 +29,7 @@
         {/if}
         <button 
             onclick={(e) => { e.stopPropagation(); onClose?.(); }}
-            class="hidden group-hover:flex items-center justify-center hover:bg-text/10 rounded-md p-0.5"
+            class="hidden group-hover:flex items-center justify-center hover:bg-text/10 rounded-md p-0.5 cursor-pointer"
         >
             <X size={12} />
         </button>
