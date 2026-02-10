@@ -16,6 +16,7 @@
     let isResizing = $state(false);
     let hasInitialized = $state(false);
 
+    // Inicialización del tamaño
     $effect(() => {
         if (!hasInitialized) {
             size = initialSize;
@@ -24,14 +25,13 @@
     });
 
     function startResizing(e: MouseEvent) {
+        // Bloqueamos la selección de texto y el comportamiento por defecto
         e.preventDefault();
         isResizing = true;
-        document.body.style.cursor = direction === 'horizontal' ? 'col-resize' : 'ns-resize';
     }
 
     function stopResizing() {
         isResizing = false;
-        document.body.style.cursor = 'default';
     }
 
     function onMouseMove(e: MouseEvent) {
@@ -44,6 +44,7 @@
             newSize = side === 'left' ? e.clientX : window.innerWidth - e.clientX;
         }
 
+        // Aplicamos límites
         if (newSize >= minSize && (!maxSize || newSize <= maxSize)) {
             size = newSize;
         }
@@ -57,7 +58,9 @@
 <svelte:window onmousemove={onMouseMove} onmouseup={stopResizing} />
 
 {#if isResizing}
-    <div class="fixed inset-0 z-9997 {direction === 'horizontal' ? 'cursor-col-resize' : 'cursor-ns-resize'}"></div>
+    <div 
+        class="fixed inset-0 z-9997 select-none {direction === 'horizontal' ? 'cursor-col-resize' : 'cursor-ns-resize'}"
+    ></div>
 {/if}
 
 <div 
@@ -68,7 +71,7 @@
         type="button"
         onmousedown={startResizing}
         ondblclick={resetSize}
-        class="absolute z-50 transition-colors hover:bg-accent/40 active:bg-accent
+        class="absolute z-40 transition-colors hover:bg-accent/40 active:bg-accent
         {direction === 'horizontal' ? 'w-1 top-0 bottom-0 cursor-col-resize' : 'h-1 left-0 right-0 cursor-ns-resize'}
         {side === 'left' ? 'right-0' : side === 'right' ? 'left-0' : side === 'bottom' ? 'top-0' : 'bottom-0'}"
         aria-label="Resize handle"
