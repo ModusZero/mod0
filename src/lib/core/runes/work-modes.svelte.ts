@@ -12,7 +12,7 @@ import { toggleUIStack } from './toggle-ui.svelte';
  * UIStack centraliza el estado de navegación global.
  * Utiliza el patrón de "Registry" para evitar condicionales innecesarios.
  */
-class WorkStack {
+class WorkModesStack {
     /** * @type {WorkSectionID} Sección maestra actual (Blueprint, Forge, etc.)
      */
     mode: WorkSectionID = $state<WorkSectionID>(WorkSectionIDs.BLUEPRINT);
@@ -55,4 +55,4 @@ class WorkStack {
 /**
  * Instancia única del estado de UI para toda la aplicación.
  */
-export const workStack = new WorkStack();
+export const workStack = new WorkModesStack();

@@ -2,7 +2,9 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main-capability",
   "description": "Capacidades de MOD0",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
     "core:window:allow-maximize",
@@ -15,12 +17,13 @@
     "core:event:default",
     "core:window:default",
     "core:webview:default",
-    "core:webview:allow-set-webview-zoom", 
+    "core:webview:allow-set-webview-zoom",
     "core:resources:default",
     "core:menu:default",
     "core:image:default",
     "core:tray:default",
     "opener:default",
-    "os:default"
+    "os:default",
+    "dialog:default"
   ]
 }

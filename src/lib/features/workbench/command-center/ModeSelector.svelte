@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { scale, fade } from 'svelte/transition';
 	import { cubicOut, cubicInOut } from 'svelte/easing';
-	import { workStack } from "$lib/core/runes/work-runes.svelte";
+	import { workStack } from "$lib/core/runes/work-modes.svelte";
 	import { WorkSectionIDs, WorkSectionVisual } from "$lib/core/constants/work-config";
 	import FloatingPanel from "$lib/components/common/low-level/FloatingPanel.svelte";
 	import type { WorkSectionID } from "$lib/core/types/work";

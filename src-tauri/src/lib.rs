@@ -1,4 +1,6 @@
-mod config; 
+mod config;
+mod commands;
+
 use config::AppConfig;
 use std::sync::Mutex;
 use tauri::{State, Manager, AppHandle};
@@ -31,7 +33,9 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init()) // <--- PLUGIN DIALOG AGREGADO
         .plugin(tauri_plugin_window_state::Builder::default().build())
+        
         .setup(|app| {
             let main_window = app.get_webview_window("main").unwrap();
             
@@ -47,9 +51,16 @@ pub fn run() {
             app.manage(AppState {
                 config: Mutex::new(initial_config),
             });
+            
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_config, update_config]) 
+        .invoke_handler(tauri::generate_handler![
+            get_config, 
+            update_config, 
+            commands::filesystem::read_folder_recursive,
+            commands::filesystem::read_file_content,
+            commands::filesystem::save_file
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Search } from "lucide-svelte";
-    import { workStack } from "$lib/core/runes/work-runes.svelte";
+    import { workStack } from "$lib/core/runes/work-modes.svelte";
     import { WorkSectionVisual } from "$lib/core/constants/work-config";
     import FloatingPanel from "$lib/components/common/low-level/FloatingPanel.svelte";
     import ModeSelector from "./ModeSelector.svelte";

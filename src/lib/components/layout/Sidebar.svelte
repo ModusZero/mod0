@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { workStack } from "$lib/core/runes/work-runes.svelte";
+    import { workStack } from "$lib/core/runes/work-modes.svelte";
     import { toggleUIStack } from "$lib/core/runes/toggle-ui.svelte";
     import { ActivityIDs, ActivityVisual } from "$lib/core/constants/work-config";
     import type { ActivityID } from "$lib/core/types/work";

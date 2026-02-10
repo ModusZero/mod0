@@ -1,7 +1,7 @@
 <script lang="ts">
     import { fade, fly } from 'svelte/transition';
     import { cubicInOut } from 'svelte/easing';
-    import { workStack } from "$lib/core/runes/work-runes.svelte";
+    import { workStack } from "$lib/core/runes/work-modes.svelte";
     import { ActivityVisual } from "$lib/core/constants/work-config";
     import { toggleUIStack } from '$lib/core/runes/toggle-ui.svelte';
     import { type DisplayNode } from '$lib/core/types/work';

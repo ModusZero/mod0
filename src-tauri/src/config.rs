@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 
@@ -24,7 +24,7 @@ impl Default for AppConfig {
 impl AppConfig {
     pub fn load(config_dir: PathBuf) -> Self {
         let config_path = config_dir.join(CONFIG_FILE_NAME);
-        
+
         if !config_path.exists() {
             fs::create_dir_all(&config_dir).ok();
             let default_config = Self::default();
