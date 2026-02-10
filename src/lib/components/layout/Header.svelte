@@ -26,14 +26,10 @@
         </div>
     </div>
 
-    <div class="flex items-center justify-center gap-4 flex-2 h-full pointer-events-none">
-        <div class="flex items-center gap-4 pointer-events-auto w-full max-w-2xl justify-center">
+    <div class="flex items-center justify-center gap-2 flex-2 h-full pointer-events-none">
+        <div class="flex items-center gap-2 pointer-events-auto w-full max-w-2xl justify-center">
 			<GoTo />
-
-			<div class="w-full max-w-md">
-                <Omnibar />
-            </div>
-
+            <Omnibar />
 			<LayoutConfig />
         </div>
     </div>
