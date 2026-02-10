@@ -1,21 +1,23 @@
-name: "Publish Release"
+name: "MOD0 Build System"
 
 on:
   push:
-    branches: [ main ]
-    tags: [ 'v*' ]
+    branches: [ "**" ] # Cualquier rama genera binarios de prueba
+    tags:
+      - 'v*'      # Solo los tags generan la Release oficial
+  pull_request:   # Los PRs también se prueban
 
 jobs:
-  publish-tauri:
+  build-and-release:
     permissions:
       contents: write
     strategy:
       fail-fast: false
       matrix:
         include:
-          - platform: "macos-latest" # Para .dmg y .app
-          - platform: "ubuntu-22.04" # Para .deb y .appimage
-          - platform: "windows-latest" # Para .exe y .msi
+          - platform: "macos-latest"
+          - platform: "ubuntu-22.04"
+          - platform: "windows-latest"
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -39,13 +41,28 @@ jobs:
       - name: install frontend dependencies
         run: npm install
 
-      - name: build and release
+      # Construir la app
+      # Si es un tag, tauri-action intentará crear la release.
+      # Si no es un tag, simplemente compilará los binarios.
+      - name: tauri build
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v__VERSION__ # Se autocompleta con el version de tauri.conf.json
-          releaseName: "MOD0 v__VERSION__"
-          releaseBody: "Automatización de MOD0 Engine - Build Multiplataforma"
+          tagName: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}
+          releaseName: "MOD0 Release ${{ github.ref_name }}"
           releaseDraft: true
           prerelease: false
+
+      # Subir Artifacts (en cada push a cualquier rama obtener los .exe, .dmg, etc)
+      - name: upload test artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: MOD0-Test-Build-${{ matrix.platform }}
+          path: |
+            src-tauri/target/release/bundle/msi/*.msi
+            src-tauri/target/release/bundle/setup.exe
+            src-tauri/target/release/bundle/dmg/*.dmg
+            src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/appimage/*.AppImage
+          retention-days: 5 # Los builds de prueba se borran en 5 días para no llenar la cuota
