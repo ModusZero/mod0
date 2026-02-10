@@ -9,7 +9,8 @@ import {
     GitBranch, 
     ClipboardList, 
     MessageSquare, 
-    TestTube
+    TestTube,
+    BotMessageSquare
 } from 'lucide-svelte';
 import type { ActivityID, DisplayNode, WorkSectionID } from "$lib/core/types/work";
 
@@ -78,7 +79,7 @@ export const ActivityVisual: Record<ActivityID, DisplayNode> = {
     [ActivityIDs.CHAT]: {
         id: ActivityIDs.CHAT, 
         label: 'Chat',
-        icon: MessageSquare, 
+        icon: BotMessageSquare, 
         color: 'text-blue-400',
         description: 'Engage in real-time conversations with your team and AI assistants in the Chat activity. Collaborate, brainstorm, and get instant feedback to keep your projects moving forward.'
     },

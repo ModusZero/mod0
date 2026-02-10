@@ -1,38 +1,60 @@
 <script lang="ts">
     import { settingsStack } from "$lib/features/settings/settings-runes.svelte";
-    import lightLogo from "$lib/assets/logo-light.svg";
     import darkLogo from "$lib/assets/logo-dark.svg";
+    import lightLogo from "$lib/assets/logo-light.svg";
+    import MainMenu from "$lib/features/workbench/controls/MainMenu.svelte";
+    import GoTo from "$lib/features/workbench/tabs/GoTo.svelte";
     import Omnibar from "$lib/features/workbench/command-center/Omnibar.svelte";
     import LayoutConfig from "$lib/features/workbench/controls/LayoutConfig.svelte";
-    import MainMenu from "$lib/features/workbench/controls/MainMenu.svelte";
-  	import GoTo from "$lib/features/workbench/tabs/GoTo.svelte";
+    import SystemControls from "$lib/features/workbench/controls/SystemControls.svelte";
+    import { type } from '@tauri-apps/plugin-os';
+
+    const osType = type();
 </script>
 
-<header class="h-11 border-b border-border-subtle flex items-center px-3 bg-sidebar/50 backdrop-blur-xl justify-between relative z-50">
-	
-	<div class="flex items-center gap-3 flex-1">
-		<img 
-			src={settingsStack.current.theme === 'dark' ? darkLogo : lightLogo} 
-			alt="Logo" 
-			class="h-5 w-5 opacity-80" 
-		/>
-        <div class="h-4 w-px bg-white/10 mx-1"></div>
+<header 
+    class="header-drag h-11 border-b border-border-subtle flex items-center justify-between bg-main/80 dark:bg-main/30 backdrop-blur-2xl relative z-50 select-none w-full shadow-sm"
+>
+    <div class="flex items-center gap-2 flex-1 h-full pointer-events-none {osType === 'macos' ? 'pl-20' : 'pl-3'}">
+        <div class="flex items-center gap-2 pointer-events-auto">
+            <img 
+                src={settingsStack.current.theme === 'dark' ? darkLogo : lightLogo} 
+                alt="Logo" 
+                class="h-5 w-5 opacity-70 hover:opacity-100 hover:scale-105 transition-all duration-300" 
+            />
+            <MainMenu />
+        </div>
+    </div>
 
-        <MainMenu />
-	</div>
+    <div class="flex items-center justify-center gap-4 flex-2 h-full pointer-events-none">
+        <div class="flex items-center gap-4 pointer-events-auto w-full max-w-2xl justify-center">
+			<GoTo />
 
-    <GoTo />
+			<div class="w-full max-w-md">
+                <Omnibar />
+            </div>
 
-	<div class="flex-1 flex justify-center">
-		<Omnibar />
-	</div>
+			<LayoutConfig />
+        </div>
+    </div>
 
-	<div class="flex items-center gap-4 flex-1 justify-end">
-		<LayoutConfig />
-		<div class="flex items-center gap-2">
-			<span class="text-[9px] opacity-20 font-black tracking-widest cursor-default">MOD0</span>
-			<div class="w-2 h-2 rounded-full bg-accent shadow-[0_0_8px_var(--accent)] animate-pulse"></div>
-            
-		</div>
-	</div>
+    <div class="flex items-center justify-end flex-1 h-full pointer-events-none">
+        <div class="pointer-events-auto h-full flex items-center">
+            <SystemControls />
+        </div>
+    </div>
 </header>
+
+<style>
+    .header-drag {
+        -webkit-app-region: drag;
+    }
+
+    :global(.no-drag), 
+    header :global(button), 
+    header :global(input),
+    header :global(img) {
+        -webkit-app-region: no-drag;
+        pointer-events: auto;
+    }
+</style>

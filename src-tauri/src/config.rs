@@ -2,7 +2,6 @@ use serde::{Serialize, Deserialize};
 use std::fs;
 use std::path::PathBuf;
 
-// Centralización del nombre del archivo
 pub const CONFIG_FILE_NAME: &str = "config.json";
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

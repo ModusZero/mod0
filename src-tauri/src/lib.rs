@@ -29,8 +29,18 @@ fn update_config(
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_window_state::Builder::default().build())
         .setup(|app| {
+            let main_window = app.get_webview_window("main").unwrap();
+            
+            #[cfg(target_os = "windows")]
+            {
+                main_window.set_decorations(false).ok();
+                main_window.set_shadow(true).ok();
+            }
+
             let config_dir = app.path().app_config_dir().map_err(|e| e.to_string()).unwrap();
             let initial_config = AppConfig::load(config_dir);
             
