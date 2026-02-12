@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "mod0",
+  "productName": "MOD0",
   "version": "0.1.0",
   "identifier": "com.luke.mod0",
   "build": {
@@ -13,9 +13,9 @@
     "windows": [
       {
         "label": "main",
-        "title": "mod0",
-        "width": 1200,
-        "height": 800,
+        "title": "MOD0",
+        "width": 1920,
+        "height": 1080,
         "minWidth": 800,
         "minHeight": 600,
         "maximized": true, 

@@ -1,4 +1,4 @@
-name: "MOD0 Build System"
+name: "Build & Release"
 
 on:
   push:

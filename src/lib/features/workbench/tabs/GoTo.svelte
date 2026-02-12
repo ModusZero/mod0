@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { tabsStack } from "$lib/core/runes/tabs.svelte";
+    import { tabsStack } from "$lib/features/workbench/tabs/tabs-runes.svelte";
     import { ChevronLeft, ChevronRight } from "lucide-svelte";
     
     const btnClass = "p-1 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed";

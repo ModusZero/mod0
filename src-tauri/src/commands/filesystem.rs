@@ -14,11 +14,11 @@ pub struct FileNode {
 // Este es el comando que Tauri ve
 #[tauri::command]
 pub async fn read_folder_recursive(path: PathBuf) -> Result<Vec<FileNode>, String> {
-    read_folder_logic(path).await
+    read_folder(path).await
 }
 
 // Esta es la lógica recursiva real "Boxeada" para evitar tamaño infinito
-fn read_folder_logic(path: PathBuf) -> BoxFuture<'static, Result<Vec<FileNode>, String>> {
+fn read_folder(path: PathBuf) -> BoxFuture<'static, Result<Vec<FileNode>, String>> {
     async move {
         let mut nodes = Vec::new();
 
@@ -35,14 +35,8 @@ fn read_folder_logic(path: PathBuf) -> BoxFuture<'static, Result<Vec<FileNode>, 
                 .to_string_lossy()
                 .to_string();
 
-            // Filtros de seguridad/performance
-            if name == "node_modules" || name == ".git" || name == "target" || name == ".DS_Store" {
-                continue;
-            }
-
             let children = if metadata.is_dir() {
-                // Llamada recursiva usando la función interna
-                Some(read_folder_logic(path.clone()).await?)
+                Some(read_folder(path.clone()).await?)
             } else {
                 None
             };
@@ -60,7 +54,7 @@ fn read_folder_logic(path: PathBuf) -> BoxFuture<'static, Result<Vec<FileNode>, 
 
         Ok(nodes)
     }
-    .boxed() // Aquí ocurre la magia del Boxing
+    .boxed()
 }
 
 #[tauri::command]

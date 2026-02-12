@@ -1,8 +1,9 @@
 <script lang="ts">
-    import { tabsStack } from "$lib/core/runes/tabs.svelte";
+    import { tabsStack } from "$lib/features/workbench/tabs/tabs-runes.svelte";
     import CodeEditor from "$lib/features/editor/CodeEditor.svelte";
     import TabManager from "$lib/features/workbench/tabs/TabManager.svelte";
     import TabSwitcher from "$lib/features/workbench/tabs/TabSwitcher.svelte";
+    import { type CodeTab } from "$lib/core/types/tab";
 </script>
 
 <div class="flex flex-col h-full w-full overflow-hidden bg-main">
@@ -15,7 +16,7 @@
         {#if tabsStack.activeTab}
             <TabSwitcher>
                 {#if tabsStack.activeTab.type === 'code'}
-                    <CodeEditor content={tabsStack.activeTab.content} />
+                    <CodeEditor content={(tabsStack.activeTab as CodeTab).content} />
                 {:else}
                     <div class="flex flex-col items-center justify-center h-full gap-2">
                         <div class="p-4 rounded-full bg-accent/5">

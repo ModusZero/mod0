@@ -1,6 +1,6 @@
 <script lang="ts">
     import { type Snippet } from 'svelte';
-    import { tabsStack } from "$lib/core/runes/tabs.svelte";
+    import { tabsStack } from "$lib/features/workbench/tabs/tabs-runes.svelte";
     import { fly } from "svelte/transition";
 
     let { children }: { children: Snippet } = $props();

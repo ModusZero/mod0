@@ -1,40 +1,34 @@
-import type { EditorFile } from '$lib/features/editor/editor-types';
+import { tabsStack } from '../workbench/tabs/tabs-runes.svelte';
+import { fileStack } from '../filesystem/files-runes.svelte';
+import type { CodeTab } from '$lib/core/types/tab';
 
-/* El EditorStack centraliza el estado de los archivos abiertos en el editor de código. */
+/**
+ * Controlador de operaciones sobre archivos de código abiertos.
+ */
 class EditorStack {
-    /* Lista de archivos actualmente abiertos en el editor */
-    tabs = $state<EditorFile[]>([]);
+    /** Sincroniza el buffer de CodeMirror con el Tab activo si es de tipo código */
+    updateContent(content: string): void {
+        const active = tabsStack.activeTab;
+        if (active?.type === 'code') {
+            const file = active as CodeTab;
 
-    /* ID del archivo actualmente activo en el editor */
-    activeFileId = $state<string | null>(null);
-
-    /* Getter para obtener el archivo activo basado en el ID */
-    activeFile = $derived(
-        this.tabs.find(t => t.id === this.activeFileId) || null
-    );
-
-    /* Métodos para abrir y cerrar archivos, y actualizar su contenido */
-    openFile(file: EditorFile) {
-        if (!this.tabs.find(t => t.id === file.id)) {
-            this.tabs.push(file);
-        }
-        this.activeFileId = file.id;
-    }
-
-    closeFile(id: string) {
-        this.tabs = this.tabs.filter(t => t.id !== id);
-        if (this.activeFileId === id) {
-            this.activeFileId = this.tabs[0]?.id || null;
+            if (file.content !== content) {
+                file.content = content;
+                file.isDirty = true;
+            }
         }
     }
 
-    updateContent(content: string) {
-        if (this.activeFile) {
-            this.activeFile.content = content;
-            this.activeFile.isDirty = true;
+    /** Persiste los cambios en disco y resetea el flag isDirty */
+    async saveFileChanges(): Promise<void> {
+        const active = tabsStack.activeTab;
+        const activeFileCode = active?.type === 'code'? active as CodeTab : null;
+
+        if (activeFileCode && activeFileCode.isDirty) {
+            await fileStack.saveCurrentFile();
+            activeFileCode.isDirty = false;
         }
     }
 }
 
-/* Instancia única del estado del editor para toda la aplicación. */
 export const editorStack = new EditorStack();

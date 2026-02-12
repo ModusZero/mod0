@@ -1,13 +1,4 @@
 /**
- * Define la estructura de un archivo de código.
- */
-export interface EditorFile extends File {
-    content: string;
-    language: 'rust' | 'javascript' | 'typescript' | 'markdown' | 'json';
-    isDirty: boolean;
-}
-
-/**
  * Configuración de la selección actual del editor.
  */
 export interface EditorSelection {

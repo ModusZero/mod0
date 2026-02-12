@@ -13,7 +13,7 @@ class SettingsStack {
         this.init();
     }
 
-    async init() {
+    async init(): Promise<void> {
         try {
             const savedConfig = await invoke<Settings>(TAURI_COMMANDS.GET_CONFIG);
             this.current = savedConfig;
@@ -25,7 +25,7 @@ class SettingsStack {
         }
     }
 
-    async update(newValues: Partial<Settings>) {
+    async update(newValues: Partial<Settings>): Promise<void> {
         const keys = Object.keys(newValues) as Array<keyof Settings>;
         
         keys.forEach(key => {
@@ -42,7 +42,7 @@ class SettingsStack {
         }
     }
 
-    private applyTheme() {
+    private applyTheme(): void {
         if (typeof document === 'undefined') return;
         const root = document.documentElement;
         
@@ -58,7 +58,7 @@ class SettingsStack {
         });
     }
 
-    private applyLanguage() {
+    private applyLanguage(): void {
         if (typeof document === 'undefined') return;
         document.documentElement.lang = this.current.language;
     }

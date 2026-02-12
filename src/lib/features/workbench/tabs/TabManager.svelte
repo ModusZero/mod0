@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { tabsStack } from "$lib/core/runes/tabs.svelte";
+    import { tabsStack } from "$lib/features/workbench/tabs/tabs-runes.svelte";
     import TabHeader from "./TabHeader.svelte";
     import { flip } from "svelte/animate";
 

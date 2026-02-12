@@ -13,9 +13,9 @@ class ToggleUIStack {
     sidebarOpen: boolean = $state(true);
 
     /* Métodos para alternar cada panel */
-    toggleSettings() { this.settingsOpen = !this.settingsOpen; }
-    toggleTerminal() { this.terminalOpen = !this.terminalOpen; }
-    toggleSidebar() { this.sidebarOpen = !this.sidebarOpen; }
+    toggleSettings(): void { this.settingsOpen = !this.settingsOpen; }
+    toggleTerminal(): void { this.terminalOpen = !this.terminalOpen; }
+    toggleSidebar(): void { this.sidebarOpen = !this.sidebarOpen; }
 }
 
 /* Instancia única del estado de UI para toda la aplicación. */
