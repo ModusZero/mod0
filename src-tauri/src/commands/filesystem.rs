@@ -1,68 +1,62 @@
-use futures::future::{BoxFuture, FutureExt};
-use serde::{Deserialize, Serialize};
-use std::fs;
+use tauri::State;
 use std::path::PathBuf;
+use tokio::sync::mpsc;
+use crate::database::DbManager;
+use crate::services::filesystem::{nodes::FileNode, scanner, operations, worker::IndexingTask, search::SearchService};
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct FileNode {
-    pub name: String,
-    pub path: PathBuf,
-    pub is_dir: bool,
-    pub children: Option<Vec<FileNode>>,
-}
-
-// Este es el comando que Tauri ve
+/// Carga el árbol de archivos. 'path' es la carpeta a leer, 'root' es la raíz del workspace para cargar reglas.
 #[tauri::command]
-pub async fn read_folder_recursive(path: PathBuf) -> Result<Vec<FileNode>, String> {
-    read_folder(path).await
+pub async fn get_file_tree(path: PathBuf, root: PathBuf) -> Result<Vec<FileNode>, String> {
+    scanner::build_tree_recursive(path, root).await
 }
 
-// Esta es la lógica recursiva real "Boxeada" para evitar tamaño infinito
-fn read_folder(path: PathBuf) -> BoxFuture<'static, Result<Vec<FileNode>, String>> {
-    async move {
-        let mut nodes = Vec::new();
-
-        // Leemos el directorio de forma síncrona (está bien para FS local)
-        let entries = fs::read_dir(&path).map_err(|e| e.to_string())?;
-
-        for entry in entries {
-            let entry = entry.map_err(|e| e.to_string())?;
-            let metadata = entry.metadata().map_err(|e| e.to_string())?;
-            let path = entry.path();
-            let name = path
-                .file_name()
-                .unwrap_or_default()
-                .to_string_lossy()
-                .to_string();
-
-            let children = if metadata.is_dir() {
-                Some(read_folder(path.clone()).await?)
-            } else {
-                None
-            };
-
-            nodes.push(FileNode {
-                name,
-                path,
-                is_dir: metadata.is_dir(),
-                children,
-            });
-        }
-
-        // Ordenar: Carpetas primero, luego archivos
-        nodes.sort_by(|a, b| b.is_dir.cmp(&a.is_dir).then_with(|| a.name.cmp(&b.name)));
-
-        Ok(nodes)
-    }
-    .boxed()
-}
-
+/// Lee un archivo del disco.
 #[tauri::command]
-pub async fn read_file_content(path: PathBuf) -> Result<String, String> {
-    fs::read_to_string(path).map_err(|e| e.to_string())
+pub async fn read_file(path: PathBuf) -> Result<String, String> {
+    operations::read_to_string(path)
 }
 
+/// Guarda un archivo existente y actualiza el índice.
 #[tauri::command]
-pub async fn save_file(path: PathBuf, content: String) -> Result<(), String> {
-    fs::write(path, content).map_err(|e| e.to_string())
+pub async fn write_file(path: PathBuf, content: String, tx: State<'_, mpsc::Sender<IndexingTask>>) -> Result<(), String> {
+    operations::save_to_file(path, content, &tx)
+}
+
+/// Crea un nuevo archivo en blanco.
+#[tauri::command]
+pub async fn create_new_file(path: PathBuf, tx: State<'_, mpsc::Sender<IndexingTask>>) -> Result<(), String> {
+    operations::create_file(path, &tx)
+}
+
+/// Crea una carpeta.
+#[tauri::command]
+pub async fn create_new_dir(path: PathBuf) -> Result<(), String> {
+    operations::create_dir_all(path)
+}
+
+/// Elimina un archivo o carpeta.
+#[tauri::command]
+pub async fn delete_path(path: PathBuf, tx: State<'_, mpsc::Sender<IndexingTask>>) -> Result<(), String> {
+    operations::delete_item(path, &tx)
+}
+
+/// Renombra o mueve un archivo/carpeta.
+#[tauri::command]
+pub async fn rename_path(old_path: PathBuf, new_path: PathBuf, tx: State<'_, mpsc::Sender<IndexingTask>>) -> Result<(), String> {
+    operations::rename_item(old_path, new_path, &tx)
+}
+
+/// Búsqueda por contenido (FTS5).
+#[tauri::command]
+pub async fn global_search(db: State<'_, DbManager>, query: String) -> Result<Vec<PathBuf>, String> {
+    SearchService::find_code(&db, &query).await
+}
+
+/// Búsqueda rápida por nombre de archivo.
+#[tauri::command]
+pub async fn quick_open(
+    db: State<'_, DbManager>, 
+    query: String
+) -> Result<Vec<PathBuf>, String> {
+    SearchService::find_filename(&db, &query).await
 }
