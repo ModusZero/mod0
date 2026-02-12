@@ -26,10 +26,10 @@ impl AppConfig {
         let config_path = config_dir.join(CONFIG_FILE_NAME);
 
         if !config_path.exists() {
-            fs::create_dir_all(&config_dir).ok();
+            let _ = fs::create_dir_all(&config_dir);
             let default_config = Self::default();
             let json = serde_json::to_string_pretty(&default_config).unwrap();
-            fs::write(config_path, json).ok();
+            let _ = fs::write(config_path, json);
             return default_config;
         }
 

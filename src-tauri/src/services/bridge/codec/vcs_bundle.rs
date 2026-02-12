@@ -1,0 +1,1 @@
+// Por qué: Si decides que el output de Git es demasiado complejo para un simple line_stream, aquí tendrías un serializador especializado en convertir el output de un git diff en un objeto que la IA entienda perfectamente.

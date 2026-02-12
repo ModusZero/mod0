@@ -22,7 +22,6 @@ impl DbManager {
 
         let pool = SqlitePool::connect_with(opts).await?;
         
-        // Ejecutar migraciones embebidas
         sqlx::migrate!("./migrations")
             .run(&pool)
             .await?;
@@ -30,7 +29,8 @@ impl DbManager {
         Ok(Self { pool })
     }
 
-    pub fn repository(&self) -> Repository {
+    /// Crea una instancia del repositorio vinculada al ciclo de vida del pool de la DB.
+    pub fn repository(&self) -> Repository<'_> {
         Repository::new(&self.pool)
     }
 }

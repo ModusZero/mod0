@@ -42,9 +42,9 @@ impl SearchService {
     /// Busca habilidades (skills) registradas en la base de datos que coincidan con un tag.
     /// 
     /// Útil para que el agente recupere contexto sobre qué herramientas usar.
-    pub async fn find_skills(db: &DbManager, tag: &str) -> Result<Vec<String>, String> {
+    pub async fn find_skills(db: &DbManager, tags: Vec<String>) -> Result<Vec<String>, String> {
         let repo = db.repository();
-        repo.get_skills_by_tag(tag)
+        repo.get_skills_by_tags(tags)
             .await
             .map(|skills| skills.into_iter().map(|s| s.name).collect())
             .map_err(|e| e.to_string())

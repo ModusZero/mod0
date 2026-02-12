@@ -30,6 +30,7 @@ tokio = { version = "1.49.0", features = ["full"] }
 sqlx = { version = "0.8.6", features = ["runtime-tokio", "sqlite", "macros", "chrono"] }
 uuid = { version = "1.20.0", features = ["v4", "serde"] }
 chrono = { version = "0.4.43", features = ["serde"] }
+ignore = "0.4"
 
 [profile.release]
 opt-level = 3
