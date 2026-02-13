@@ -18,7 +18,7 @@
 
         [ActivityIDs.WORKFLOW]: () => import('$lib/systems/workspace/workflows/WorkflowsSidebar.svelte'),
         [ActivityIDs.CONTEXT]: () => import('$lib/systems/workspace/context/ContextSidebar.svelte'),
-        [ActivityIDs.EXTENSIONS]: () => import('$lib/systems/workspace/extensions/ExtensionsSidebar.svelte'),
+        [ActivityIDs.PLUGINS]: () => import('$lib/systems/workspace/plugins/PluginsSidebar.svelte'),
     };
 </script>
 

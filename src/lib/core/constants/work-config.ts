@@ -40,7 +40,7 @@ export const ActivityIDs = {
     // Workspace
     CONTEXT: 'context',
     WORKFLOW: 'workflow',
-    EXTENSIONS: 'extensions',
+    PLUGINS: 'plugins',
 };
 
 export const WorkSectionVisual: Record<WorkSectionID, DisplayNode> = {
@@ -145,12 +145,12 @@ export const ActivityVisual: Record<ActivityID, DisplayNode> = {
         color: 'text-blue-400',
         description: 'Define and manage your project workflows in the Workflow activity. Create custom workflows that match your team\'s processes and requirements.' 
     },
-    [ActivityIDs.EXTENSIONS]: { 
-        id: ActivityIDs.EXTENSIONS, 
-        label: 'Extensions', 
+    [ActivityIDs.PLUGINS]: { 
+        id: ActivityIDs.PLUGINS, 
+        label: 'Plugins', 
         icon: Puzzle, 
         color: 'text-green-400',
-        description: 'Manage and configure extensions in the Extensions activity. Install, update, and customize extensions to enhance your IDE capabilities.' 
+        description: 'Manage and configure extensions and MCP servers in the Plugins activity. Install, update, and customize extensions and MCP servers to enhance your IDE capabilities.' 
     },
 };
 
@@ -171,6 +171,6 @@ export const ActivityByWork: Record<WorkSectionID, ActivityID[]> = {
     [WorkSectionIDs.WORKSPACE]: [
         ActivityIDs.CONTEXT,
         ActivityIDs.WORKFLOW,
-        ActivityIDs.EXTENSIONS
+        ActivityIDs.PLUGINS
     ]
 };

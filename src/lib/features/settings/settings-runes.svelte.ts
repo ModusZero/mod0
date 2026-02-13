@@ -1,12 +1,13 @@
-import { invoke } from "@tauri-apps/api/core";
-import { TAURI_COMMANDS } from "$lib/core/constants/tauri-commands";
+import { SettingsService } from '../../core/services/settings-service';
+import { fileStack } from '../system-atoms/pulse/files/files-runes.svelte';
 import type { Settings } from "./settings-types";
 
 class SettingsStack {
     current = $state<Settings>({
-        theme: "light",
+        theme: "dark",
         language: "es",
-        last_project_path: null
+        last_project_path: null,
+        auto_save: false
     });
 
     constructor() {
@@ -15,47 +16,43 @@ class SettingsStack {
 
     async init(): Promise<void> {
         try {
-            const savedConfig = await invoke<Settings>(TAURI_COMMANDS.GET_CONFIG);
+            const savedConfig = await SettingsService.getConfig();
             this.current = savedConfig;
+            
             this.applyTheme();
             this.applyLanguage();
+
+            if (this.current.last_project_path) {
+                console.log("Restaurando último workspace:", this.current.last_project_path);
+                fileStack.openFolder(this.current.last_project_path);
+            }
         } catch (e) {
-            console.warn("Modo Web: Usando configuración por defecto.");
+            console.warn("Modo Web o Error: Usando configuración por defecto.");
             this.applyTheme();
         }
     }
 
     async update(newValues: Partial<Settings>): Promise<void> {
-        const keys = Object.keys(newValues) as Array<keyof Settings>;
-        
-        keys.forEach(key => {
-            (this.current as any)[key] = newValues[key];
-        });
+        // Actualizamos el estado reactivo
+        Object.assign(this.current, newValues);
 
-        if (keys.includes('theme')) this.applyTheme();
-        if (keys.includes('language')) this.applyLanguage();
+        if (newValues.theme) this.applyTheme();
+        if (newValues.language) this.applyLanguage();
 
         try {
-            await invoke(TAURI_COMMANDS.UPDATE_CONFIG, { newConfig: this.current });
+            await SettingsService.updateConfig(this.current);
         } catch (e) {
-            console.error("Error al guardar:", e);
+            console.error("Error al guardar en Rust:", e);
         }
     }
 
     private applyTheme(): void {
         if (typeof document === 'undefined') return;
         const root = document.documentElement;
-        
         document.body.classList.add('theme-transitioning');
-
         root.classList.toggle('dark', this.current.theme === 'dark');
         root.style.colorScheme = this.current.theme;
-
-        requestAnimationFrame(() => {
-            setTimeout(() => {
-                document.body.classList.remove('theme-transitioning');
-            }, 1);
-        });
+        setTimeout(() => document.body.classList.remove('theme-transitioning'), 150);
     }
 
     private applyLanguage(): void {
