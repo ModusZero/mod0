@@ -2,7 +2,7 @@ use tauri::State;
 use std::path::PathBuf;
 use tokio::sync::mpsc;
 use crate::database::DbManager;
-use crate::kernel::filesystem::{nodes::FileNode, scanner, operations, worker::IndexingTask, search::SearchService};
+use crate::kernel::fs::{nodes::FileNode, scanner, operations, worker::IndexingTask, search::SearchService};
 
 /// Carga el árbol de archivos. 'path' es la carpeta a leer, 'root' es la raíz del workspace para cargar reglas.
 #[tauri::command]

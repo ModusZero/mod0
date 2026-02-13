@@ -1,4 +1,5 @@
-pub mod core;
-pub mod project;
 pub mod agent;
-pub mod communication;
+pub mod files;
+pub mod history;
+pub mod session;
+pub mod workspace;

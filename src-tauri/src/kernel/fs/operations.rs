@@ -1,7 +1,7 @@
 use std::fs;
 use std::path::PathBuf;
 use tokio::sync::mpsc;
-use crate::services::filesystem::worker::IndexingTask;
+use crate::kernel::fs::worker::IndexingTask;
 
 /// Lee el contenido de un archivo a String.
 pub fn read_to_string(path: PathBuf) -> Result<String, String> {

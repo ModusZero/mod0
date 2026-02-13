@@ -4,8 +4,8 @@ use std::sync::Arc;
 use tokio::process::Command;
 use tokio::sync::Mutex;
 use tauri::AppHandle;
-use crate::services::protocol_engine::transport::ProtocolTransport;
-use crate::services::lsp::registry::LspDefinition;
+use crate::services::bridge::codec::rpc_json::ProtocolTransport;
+use crate::services::bridge::capabilities::lsp::registry::LspDefinition;
 
 pub struct LspManager {
     pub transports: Arc<Mutex<HashMap<String, ProtocolTransport>>>,

@@ -5,8 +5,8 @@ use tokio::sync::Mutex;
 use tokio::process::Command;
 use tokio::io::AsyncBufReadExt;
 use tauri::AppHandle;
-use crate::services::protocol_engine::transport::ProtocolTransport;
-use crate::services::mcp::registry::McpDefinition;
+use crate::services::bridge::codec::rpc_json::ProtocolTransport;
+use crate::services::bridge::capabilities::mcp::registry::McpDefinition;
 
 pub struct McpManager {
     pub servers: Arc<Mutex<HashMap<String, ProtocolTransport>>>,

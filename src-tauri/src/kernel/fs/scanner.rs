@@ -2,7 +2,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use futures::future::{BoxFuture, FutureExt};
 use ignore::gitignore::{Gitignore, GitignoreBuilder};
-use crate::services::filesystem::nodes::{FileNode, FileCategory};
+use crate::kernel::fs::nodes::{FileNode, FileCategory};
 
 /// Helper para clasificar archivos basándose en reglas de exclusión personalizadas y de Git.
 pub struct FileCategorizer {

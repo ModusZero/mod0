@@ -11,14 +11,14 @@ use crate::config::AppConfig;
 use crate::services::bridge::capabilities::lsp::LspManager;
 use crate::services::bridge::capabilities::mcp::McpManager;
 use crate::database::DbManager;
-use crate::kernel::filesystem::worker::{IndexingWorker, IndexingTask};
+use crate::kernel::fs::worker::{IndexingWorker, IndexingTask};
 use tokio::sync::mpsc;
 
 // Imports de comandos limpios
 use crate::commands::mcp::*;
 use crate::commands::agent::*;
 use crate::commands::lsp::*;
-use crate::commands::filesystem::*;
+use crate::commands::fs::*;
 use crate::commands::config::*;
 
 /// Estado global de la aplicación.
