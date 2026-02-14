@@ -25,5 +25,7 @@ pub struct Skill {
     pub code: String,
     pub description: Option<String>,
     pub tags: Option<String>,
+    pub usage_count: i64,
+    pub last_used: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
 }

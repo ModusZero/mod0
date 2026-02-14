@@ -12,20 +12,20 @@ use crate::services::bridge::capabilities::lsp::LspManager;
 use crate::services::bridge::capabilities::mcp::McpManager;
 use crate::database::DbManager;
 use crate::kernel::fs::worker::{IndexingWorker, IndexingTask};
+use crate::kernel::terminal::TerminalManager; // Importado correctamente
 use tokio::sync::mpsc;
 
-// Imports de comandos limpios
+// Imports de comandos
 use crate::commands::mcp::*;
 use crate::commands::agent::*;
 use crate::commands::lsp::*;
-use crate::commands::fs::*;
+use crate::commands::kernel::fs::*;
+use crate::commands::kernel::terminal::*;
 use crate::commands::config::*;
 
-/// Estado global de la aplicación.
+/// Estado global de la aplicación para acceso rápido desde comandos
 pub struct AppState {
     pub config: Mutex<AppConfig>,
-    pub db: DbManager,
-    pub indexer_tx: mpsc::Sender<IndexingTask>,
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -43,11 +43,11 @@ pub fn run() {
                 std::fs::create_dir_all(&config_dir).unwrap();
             }
 
-            // 1. Cargar Configuración
             let initial_config = AppConfig::load(config_dir.clone());
-            let last_project = initial_config.last_project_path.clone(); // Guardamos referencia
+            let last_project = initial_config.last_project_path.clone();
             
-            // 2. Inicializar base de datos y worker
+            let terminal_manager = TerminalManager::new(handle.clone());
+
             tauri::async_runtime::block_on(async move {
                 let db_path = config_dir.join("modus_zero.db");
                 
@@ -55,10 +55,8 @@ pub fn run() {
                     .await
                     .expect("Fallo crítico al inicializar la base de datos");
 
-                // 3. Spawning del Indexing Worker
                 let indexer_tx = IndexingWorker::spawn(db_manager.clone());
 
-                // 4. Indexación inicial si existe proyecto previo
                 if let Some(path_str) = last_project {
                     let project_path = PathBuf::from(path_str);
                     if project_path.exists() {
@@ -66,14 +64,11 @@ pub fn run() {
                     }
                 }
 
-                // 5. Registrar estados
-                handle.manage(db_manager.clone());
-                handle.manage(indexer_tx.clone());
-                
+                handle.manage(db_manager);
+                handle.manage(indexer_tx);
+                handle.manage(terminal_manager);
                 handle.manage(AppState {
                     config: Mutex::new(initial_config),
-                    db: db_manager,
-                    indexer_tx,
                 });
             });
 
@@ -97,7 +92,23 @@ pub fn run() {
             global_search,
             quick_open,
 
+            // --- Terminal ---
+            term_create_session,
+            term_write,
+            term_resize,
+            term_get_context,
+            term_get_history,
+            term_clear_history,
+
             // --- Agents ---
+            send_chat_message,
+            get_chat_history,
+            clear_chat_history,
+            add_agent_thought,
+            get_agent_session_history,
+            sync_execution_task,
+            update_thought_status,
+            report_task_tdd_status,
             discover_agent_skills,
 
             // --- Proxies de Protocolos ---

@@ -9,6 +9,7 @@ pub struct ThoughtNode {
     pub parent_id: Option<i64>,
     pub node_type: String,
     pub content: String,
+    pub status: String, // "pending", "approved", "rejected"
     pub metadata: Option<String>,
     pub created_at: DateTime<Utc>,
 }
@@ -20,5 +21,6 @@ pub struct ExecutionTask {
     pub title: String,
     pub status: String,
     pub tdd_status: String,
+    pub error_log: Option<String>,
     pub position: i32,
 }

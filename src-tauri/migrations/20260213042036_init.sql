@@ -1,5 +1,13 @@
+CREATE TABLE IF NOT EXISTS project (
+    path TEXT PRIMARY KEY,
+    last_opened DATETIME NOT NULL,
+    is_favorite BOOLEAN DEFAULT 0,
+    custom_settings TEXT
+);
+
 CREATE VIRTUAL TABLE IF NOT EXISTS file_index USING fts5(
     path UNINDEXED, 
+    project_path UNINDEXED, 
     content,
     tokenize='unicode61'
 );
@@ -14,27 +22,14 @@ CREATE TABLE IF NOT EXISTS file_metadata (
     FOREIGN KEY(project_path) REFERENCES project(path)
 );
 
-CREATE TABLE IF NOT EXISTS editor_state (
-    project_path TEXT PRIMARY KEY,
-    open_tabs TEXT, -- JSON array de rutas
-    active_tab TEXT,
-    layout_config TEXT, -- JSON con la posición de los paneles
-    FOREIGN KEY(project_path) REFERENCES project(path)
-);
-
-CREATE TABLE IF NOT EXISTS project (
-    path TEXT PRIMARY KEY,
-    last_opened DATETIME NOT NULL,
-    is_favorite BOOLEAN DEFAULT 0,
-    custom_settings TEXT
-);
-
 CREATE TABLE IF NOT EXISTS skill (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     code TEXT NOT NULL,
     description TEXT,
     tags TEXT,
+    usage_count INTEGER DEFAULT 0,
+    last_used DATETIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -47,6 +42,39 @@ CREATE TABLE IF NOT EXISTS session (
     worktree_path TEXT,          -- RUTA FÍSICA si se usa un git worktree
     status TEXT NOT NULL,        -- 'active', 'merging', 'completed', 'aborted'
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(project_path) REFERENCES project(path)
+);
+
+
+CREATE TABLE IF NOT EXISTS thought_node (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    parent_id INTEGER,
+    node_type TEXT NOT NULL, -- Decision, Action, Observation
+    content TEXT NOT NULL,
+    status TEXT DEFAULT 'pending', -- pending, approved, rejected
+    metadata TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(session_id) REFERENCES session(id),
+    FOREIGN KEY(parent_id) REFERENCES thought_node(id)
+);
+
+CREATE TABLE IF NOT EXISTS execution_tasks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    status TEXT NOT NULL, -- Todo, In Progress, Testing, Done
+    tdd_status TEXT NOT NULL, -- Red, Green, Refactor
+    error_log TEXT,
+    position INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY(session_id) REFERENCES session(id)
+);
+
+CREATE TABLE IF NOT EXISTS editor_state (
+    project_path TEXT PRIMARY KEY,
+    open_tabs TEXT, -- JSON array de rutas
+    active_tab TEXT,
+    layout_config TEXT, -- JSON con la posición de los paneles
     FOREIGN KEY(project_path) REFERENCES project(path)
 );
 
@@ -71,26 +99,4 @@ CREATE TABLE IF NOT EXISTS terminal_history (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(session_id) REFERENCES session(id),
     FOREIGN KEY(project_path) REFERENCES project(path)
-);
-
-CREATE TABLE IF NOT EXISTS thought_node (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    session_id TEXT NOT NULL,
-    parent_id INTEGER,
-    node_type TEXT NOT NULL, -- Decision, Action, Observation
-    content TEXT NOT NULL,
-    metadata TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(session_id) REFERENCES session(id),
-    FOREIGN KEY(parent_id) REFERENCES thought_node(id)
-);
-
-CREATE TABLE IF NOT EXISTS execution_tasks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    session_id TEXT NOT NULL,
-    title TEXT NOT NULL,
-    status TEXT NOT NULL, -- Todo, In Progress, Testing, Done
-    tdd_status TEXT NOT NULL, -- Red, Green, Refactor
-    position INTEGER NOT NULL DEFAULT 0,
-    FOREIGN KEY(session_id) REFERENCES session(id)
 );
