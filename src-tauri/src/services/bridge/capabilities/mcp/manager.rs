@@ -1,60 +1,43 @@
 use std::collections::HashMap;
 use std::process::Stdio;
 use std::sync::Arc;
-use tokio::sync::Mutex;
 use tokio::process::Command;
-use tokio::io::AsyncBufReadExt;
+use tokio::sync::Mutex;
 use tauri::AppHandle;
-use crate::services::bridge::codec::rpc_json::ProtocolTransport;
+use crate::services::bridge::transport::stdio::StdioTransport;
 use crate::services::bridge::capabilities::mcp::registry::McpDefinition;
 
 pub struct McpManager {
-    pub servers: Arc<Mutex<HashMap<String, ProtocolTransport>>>,
+    pub servers: Arc<Mutex<HashMap<String, StdioTransport>>>,
 }
 
 impl McpManager {
     pub fn new() -> Self {
-        Self {
-            servers: Arc::new(Mutex::new(HashMap::new())),
-        }
+        Self { servers: Arc::new(Mutex::new(HashMap::new())) }
     }
 
-    pub async fn ensure_server(&self, name: &str, app: AppHandle, project_path: &str) -> Result<(), String> {
+    pub async fn ensure_server(&self, name: &str, project_path: &str, app: AppHandle) -> Result<(), String> {
         let mut servers = self.servers.lock().await;
-        
         if servers.contains_key(name) { return Ok(()); }
 
-        let def = McpDefinition::get_core_tools(project_path).into_iter()
-            .find(|d| d.name == name)
-            .ok_or_else(|| format!("MCP Server {} not found", name))?;
+        // Discovery dinámico
+        let def = McpDefinition::discover(name, project_path)
+            .ok_or_else(|| format!("MCP {} no encontrado", name))?;
 
         let mut child = Command::new(&def.command)
             .args(&def.args)
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
+            .stderr(Stdio::null())
             .spawn()
-            .map_err(|e| format!("Fallo al iniciar MCP {}: {}", def.command, e))?;
+            .map_err(|e| e.to_string())?;
 
-        let stdin = child.stdin.take().ok_or("No se pudo abrir STDIN del MCP")?;
-        let stdout = child.stdout.take().ok_or("No se pudo abrir STDOUT del MCP")?;
-        let stderr = child.stderr.take().ok_or("No se pudo abrir STDERR")?;
+        let stdin = child.stdin.take().ok_or("STDIN MCP error")?;
+        let stdout = child.stdout.take().ok_or("STDOUT MCP error")?;
 
-        let name_for_err = name.to_string(); 
-        
-        // Monitor de errores (Stderr)
-        tokio::spawn(async move {
-            let mut reader = tokio::io::BufReader::new(stderr).lines();
-            while let Ok(Some(line)) = reader.next_line().await {
-                eprintln!("[MCP {} Error]: {}", name_for_err, line);
-            }
-        });
+        StdioTransport::spawn_reader(stdout, format!("mcp-event-{}", name), app);
+        servers.insert(name.to_string(), StdioTransport::new(stdin));
 
-        ProtocolTransport::spawn_reader(stdout, format!("mcp-event-{}", name), app);
-        
-        servers.insert(name.to_string(), ProtocolTransport::new(stdin));
-        
-        println!("MCP Server {} iniciado correctamente", name);
         Ok(())
     }
 }

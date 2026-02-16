@@ -17,7 +17,7 @@ impl FileCategorizer {
         let mut git_builder = GitignoreBuilder::new(project_root);
         git_builder.add(project_root.join(".gitignore"));
         let mut scan_builder = GitignoreBuilder::new(project_root);
-        scan_builder.add(project_root.join(".scanignore"));
+        scan_builder.add(project_root.join(".mod0/.scanignore"));
 
         Self {
             gitignore: git_builder.build().ok(),

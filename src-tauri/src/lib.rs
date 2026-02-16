@@ -13,12 +13,8 @@ use crate::services::bridge::capabilities::mcp::McpManager;
 use crate::database::DbManager;
 use crate::kernel::fs::worker::{IndexingWorker, IndexingTask};
 use crate::kernel::terminal::TerminalManager; // Importado correctamente
-use tokio::sync::mpsc;
 
-// Imports de comandos
-use crate::commands::mcp::*;
 use crate::commands::agent::*;
-use crate::commands::lsp::*;
 use crate::commands::kernel::fs::*;
 use crate::commands::kernel::terminal::*;
 use crate::commands::config::*;
@@ -111,9 +107,7 @@ pub fn run() {
             report_task_tdd_status,
             discover_agent_skills,
 
-            // --- Proxies de Protocolos ---
-            send_lsp_request,
-            send_mcp_request,
+            // --- Bridge ---
         ])
         .run(tauri::generate_context!())
         .expect("error while running MOD0");
