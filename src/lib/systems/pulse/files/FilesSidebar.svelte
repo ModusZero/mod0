@@ -1,86 +1,91 @@
 <script lang="ts">
-    import { fileStack } from "$lib/features/filesystem/files-runes.svelte";
-    import { Search, EllipsisVertical } from "lucide-svelte";
-    import FileTree from "$lib/features/filesystem/FileTree.svelte";
-    import { slide } from "svelte/transition";
-    import type { GenericFile } from "$lib/core/types/tab";
+	import { EllipsisVertical, Search as SearchIcon, FolderPlus, FilePlus, RefreshCw, Trash2 } from "lucide-svelte";
+	import { fileStack } from "$lib/features/system-atoms/pulse/files/files-runes.svelte";
+    import Menu from "$lib/components/common/Menu.svelte";
+    import FloatingPanel from "$lib/components/common/low-level/FloatingPanel.svelte";
+	import FileHistory from "$lib/features/system-atoms/pulse/files/FileHistory.svelte";
+	import FileSearch from "$lib/features/system-atoms/pulse/files/FileSearch.svelte";
+	import FileTree from "$lib/features/system-atoms/pulse/files/FileTree.svelte";
+	import type { GenericFile } from "$lib/core/types/tab";
 
-    let searchQuery = $state("");
+	let searchQuery = $state("");
+	let viewMode = $state<'tree' | 'list'>('tree');
+	
+	// Control del menú de opciones
+	let menuAnchor = $state<HTMLElement | null>(null);
+	let showMenu = $state(false);
 
-    /**
-     * Filtra nodos recursivamente. 
-     * Si searchQuery está vacío, no debería ni ejecutarse.
-     */
-    function filterNodes(nodes: GenericFile[], query: string): GenericFile[] {
-        const lowerQuery = query.toLowerCase();
-        
-        return nodes.reduce((acc: GenericFile[], node) => {
-            // Comprobamos si el nombre coincide
-            const nameMatches = node.name.toLowerCase().includes(lowerQuery);
-            
-            if (node.is_dir) {
-                // Si es directorio, filtramos sus hijos primero
-                const filteredChildren = node.children ? filterNodes(node.children, query) : [];
-                
-                // Si la carpeta coincide OR tiene hijos que coinciden, la incluimos
-                if (nameMatches || filteredChildren.length > 0) {
-                    acc.push({ 
-                        ...node, 
-                        children: filteredChildren 
-                    });
-                }
-            } else if (nameMatches) {
-                // Si es archivo y coincide, lo incluimos
-                acc.push(node);
-            }
-            
-            return acc;
-        }, []);
-    }
+	const projectActions = [
+		{ label: 'New File', icon: FilePlus, action: () => fileStack.createNewFile() },
+		{ label: 'New Folder', icon: FolderPlus, action: () => console.log('New Folder') },
+		{ label: 'Refresh Explorer', icon: RefreshCw, action: () => fileStack.openFolder(fileStack.rootPath!) },
+		{ label: 'Delete Project Cache', icon: Trash2, danger: true, action: () => console.log('Delete') },
+	];
 
-    /** * IMPORTANTE: Usamos un derivado robusto.
-     * Si no hay query, devolvemos la referencia directa de fileStack.files.
-     */
-    const displayedFiles = $derived.by(() => {
-        const query = searchQuery.trim();
-        if (!query) return fileStack.files;
-        return filterNodes(fileStack.files, query);
-    });
+	function filterRecursive(nodes: GenericFile[], query: string): GenericFile[] {
+		const q = query.toLowerCase();
+		return nodes.reduce((acc: GenericFile[], node) => {
+			const match = node.name.toLowerCase().includes(q);
+			if (node.is_dir) {
+				const children = node.children ? filterRecursive(node.children, query) : [];
+				if (match || children.length > 0) acc.push({ ...node, children });
+			} else if (match) {
+				acc.push(node);
+			}
+			return acc;
+		}, []);
+	}
+
+	const displayedFiles = $derived.by(() => {
+		if (!searchQuery.trim() || fileStack.searchMode === 'content') return fileStack.files;
+		return filterRecursive(fileStack.files, searchQuery);
+	});
 </script>
 
-<section class="flex flex-col h-full bg-sidebar select-none border-r border-white/5">
-    <div class="p-4 flex items-center justify-between">
-        <span class="text-[10px] font-bold uppercase tracking-widest opacity-30">Explorer</span>
-        <div class="flex gap-1">
-            <button 
-                onclick={() => fileStack.isSearching = !fileStack.isSearching} 
-                class="p-1 hover:bg-white/10 rounded transition-colors {fileStack.isSearching ? 'text-accent' : 'text-text/50'}"
-            >
-                <Search size={14}/>
-            </button>
-            <button class="p-1 hover:bg-white/10 rounded text-text/50"><EllipsisVertical size={14}/></button>
-        </div>
-    </div>
+<section class="flex flex-col h-full bg-sidebar border-r border-white/5 select-none relative">
+	<div class="p-4 flex items-center justify-between">
+		<span class="text-[10px] font-black uppercase tracking-[0.3em] opacity-20">Project</span>
+		<div class="flex gap-0.5">
+			<button 
+                title="Buscar"
+				onclick={() => fileStack.isSearching = !fileStack.isSearching}
+				class="p-1.5 hover:bg-white/10 rounded transition-colors {fileStack.isSearching ? 'text-accent bg-accent/5' : 'text-text/40'}"
+			>
+				<SearchIcon size={14}/>
+			</button>
+			
+			<button 
+				bind:this={menuAnchor}
+                title="Más opciones"
+				onclick={() => showMenu = !showMenu}
+				class="p-1.5 hover:bg-white/10 rounded text-text/40 hover:text-text transition-colors"
+			>
+				<EllipsisVertical size={14}/>
+			</button>
 
-    {#if fileStack.isSearching}
-        <div transition:slide={{ duration: 150 }} class="px-4 pb-3">
-            <input 
-                bind:value={searchQuery}
-                placeholder="Filter by name..."
-                class="w-full bg-main/30 border border-white/10 rounded px-2 py-1.5 text-xs outline-none focus:border-accent/40"
-            />
-        </div>
-    {/if}
+			{#if showMenu}
+				<FloatingPanel anchorEl={menuAnchor} offset={8}>
+					<Menu items={projectActions} onclose={() => showMenu = false} />
+				</FloatingPanel>
+			{/if}
+		</div>
+	</div>
 
-    <div class="flex-1 overflow-y-auto custom-scroll pb-4">
-        {#if displayedFiles && displayedFiles.length > 0}
-            <FileTree nodes={displayedFiles} />
-        {:else}
-            <div class="px-6 py-10 flex flex-col items-center justify-center opacity-20">
-                <p class="text-[10px] uppercase tracking-tighter font-bold">
-                    {searchQuery ? "No matches found" : "Empty Workspace"}
-                </p>
-            </div>
-        {/if}
-    </div>
+	{#if fileStack.isSearching}
+		<FileSearch bind:searchQuery bind:viewMode />
+	{/if}
+
+	<div class="flex-1 overflow-y-auto custom-scroll">
+		<FileHistory />
+		
+		<div class="py-2">
+			{#if displayedFiles.length > 0}
+				<FileTree nodes={displayedFiles} />
+			{:else}
+				<div class="p-10 text-center opacity-20 text-[10px] font-bold uppercase">
+					{searchQuery ? 'No results' : 'Empty'}
+				</div>
+			{/if}
+		</div>
+	</div>
 </section>

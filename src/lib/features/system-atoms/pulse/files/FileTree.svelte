@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fileStack } from "$lib/features/filesystem/files-runes.svelte";
+	import { fileStack } from "./files-runes.svelte";
 	import { ChevronRight, ChevronDown, Folder, FileCode } from "lucide-svelte";
     import Tooltip from "$lib/components/common/Tooltip.svelte";
     import Self from "./FileTree.svelte";

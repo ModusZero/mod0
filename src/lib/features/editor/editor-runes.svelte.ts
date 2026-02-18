@@ -1,33 +1,46 @@
 import { tabsStack } from '../workbench/tabs/tabs-runes.svelte';
-import { fileStack } from '../filesystem/files-runes.svelte';
+import { fileStack } from '../system-atoms/pulse/files/files-runes.svelte';
 import type { CodeTab } from '$lib/core/types/tab';
+import { LanguageDescription } from '@codemirror/language';
+import { languages } from '@codemirror/language-data';
 
-/**
- * Controlador de operaciones sobre archivos de código abiertos.
- */
 class EditorStack {
-    /** Sincroniza el buffer de CodeMirror con el Tab activo si es de tipo código */
+    /** * Detecta el lenguaje basado en la extensión, igual que VSCode.
+     */
+    getLanguageData(fileName: string) {
+        const desc = LanguageDescription.matchFilename(languages, fileName);
+        return desc;
+    }
+
     updateContent(content: string): void {
         const active = tabsStack.activeTab;
         if (active?.type === 'code') {
             const file = active as CodeTab;
-
             if (file.content !== content) {
                 file.content = content;
                 file.isDirty = true;
+                fileStack.updateFileContent(file.id, content);
             }
         }
     }
 
-    /** Persiste los cambios en disco y resetea el flag isDirty */
     async saveFileChanges(): Promise<void> {
         const active = tabsStack.activeTab;
-        const activeFileCode = active?.type === 'code'? active as CodeTab : null;
-
-        if (activeFileCode && activeFileCode.isDirty) {
+        if (active?.type === 'code' && (active as CodeTab).isDirty) {
             await fileStack.saveCurrentFile();
-            activeFileCode.isDirty = false;
+            (active as CodeTab).isDirty = false;
         }
+    }
+
+    /**
+     * Retorna la extensión de lenguaje cargada dinámicamente
+     */
+    async getDynamicLanguage(fileName: string) {
+        const langDesc = this.getLanguageData(fileName);
+        if (langDesc) {
+            return await langDesc.load();
+        }
+        return [];
     }
 }
 

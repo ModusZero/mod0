@@ -1,3 +1,4 @@
+import type { EditorLanguage } from "$lib/features/editor/editor-types";
 import type { ActivityID } from "./work";
 
 /** Estructura base para cualquier elemento que pueda ocupar una pestaña */
@@ -8,6 +9,38 @@ export interface BaseTab {
     color: string; // Clase de color para la UI
 }
 
+export type AssetExtension = 
+    'png'
+    | 'jpg'
+    | 'jpeg'
+    | 'gif'
+    | 'webp'
+    | 'svg'
+    | 'ico';
+
+export const ASSET_EXTENSIONS: Set<string> = new Set<AssetExtension>([
+    'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'ico'
+]);
+
+export type CodeExtension = 
+    'astro'
+    | 'rs'
+    | 'js'
+    | 'ts'
+    | 'svelte'
+    | 'json'
+    | 'md'
+    | 'css'
+    | 'html'
+    | 'txt'
+    | 'toml'
+    | 'yaml'
+    | 'rb'
+    | 'cpp'
+    | 'hpp'
+    | 'java'
+    | 'other';
+
 /**
  * Define la estructura de un archivo cualquiera.
  */
@@ -15,7 +48,7 @@ export interface FileNode extends BaseTab{
     path: string;
     name: string;
     is_dir: boolean;
-    extension: string;
+    extension: AssetExtension | CodeExtension;
 }
 
 /**
@@ -23,7 +56,7 @@ export interface FileNode extends BaseTab{
  */
 export interface CodeTab extends BaseTab, FileNode {
     content: string;
-    language: 'rust' | 'javascript' | 'typescript' | 'markdown' | 'json';
+    language: EditorLanguage;
     isDirty: boolean;
     type: 'code';
 }

@@ -8,6 +8,8 @@
     import Footer from "$lib/components/layout/Footer.svelte";
     import Terminal from "$lib/features/terminal/Terminal.svelte";
     import Settings from "$lib/components/settings(future-migration)/Settings.svelte";
+  import { bridgeService } from "$lib/core/services/bridge-service";
+  import { fileStack } from "$lib/features/system-atoms/pulse/files/files-runes.svelte";
 
     let { children } = $props();
     let osType = $state(type()); 
@@ -21,6 +23,12 @@
         
         await webview.setZoom(zoomLevel);
     }
+
+    $effect(() => {
+        if (fileStack.rootPath) {
+            bridgeService.discoverAndBoot(fileStack.rootPath);
+        }
+    });
 
     $effect(() => {
         // Escuchar Ctrl + / Ctrl -

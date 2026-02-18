@@ -4,19 +4,22 @@
     import TabManager from "$lib/features/workbench/tabs/TabManager.svelte";
     import TabSwitcher from "$lib/features/workbench/tabs/TabSwitcher.svelte";
     import { type CodeTab } from "$lib/core/types/tab";
+    import { settingsStack } from "$lib/features/settings/settings-runes.svelte";
+    import darkLogo from "$lib/assets/logo-dark.svg";
+    import lightLogo from "$lib/assets/logo-light.svg";
 </script>
 
 <div class="flex flex-col h-full w-full overflow-hidden bg-main">
-    <nav class="flex h-9 bg-sidebar/20 border-b border-border-subtle shrink-0">
-        <TabManager />
-        <div class="flex-1 border-border-subtle"></div>
-    </nav>
+    {#if tabsStack.activeTab}
+        <nav class="flex h-9 bg-sidebar/20 border-b border-border-subtle shrink-0">
+            <TabManager />
+            <div class="flex-1 border-border-subtle"></div>
+        </nav>
 
-    <div class="flex-1 relative min-h-0 bg-main">
-        {#if tabsStack.activeTab}
+        <div class="flex-1 relative min-h-0 bg-main">
             <TabSwitcher>
                 {#if tabsStack.activeTab.type === 'code'}
-                    <CodeEditor content={(tabsStack.activeTab as CodeTab).content} />
+                    <CodeEditor tab={(tabsStack.activeTab as CodeTab)} />
                 {:else}
                     <div class="flex flex-col items-center justify-center h-full gap-2">
                         <div class="p-4 rounded-full bg-accent/5">
@@ -27,15 +30,23 @@
                         </p>
                     </div>
                 {/if}
-            </TabSwitcher>
+                
+                </TabSwitcher>
+            </div>
         {:else}
             <div class="flex flex-col items-center justify-center h-full gap-4">
-                <h1 class="text-4xl font-black opacity-5 select-none tracking-tighter">MOD0</h1>
+                <h1 class="text-4xl font-black opacity-50 select-none tracking-tighter">MOD0</h1>
+
+                <img 
+                    src={settingsStack.current.theme === 'dark' ? darkLogo : lightLogo} 
+                    alt="Logo" 
+                    class="h-40 w-40 opacity-40" 
+                />
+
                 <div class="flex flex-col items-center gap-1">
-                    <p class="text-[10px] text-text/20 uppercase tracking-widest font-bold">Sin archivos abiertos</p>
-                    <p class="text-[9px] text-text/10 font-mono">Presiona Ctrl+P para buscar</p>
+                    <p class="text-[10px] text-text/50 uppercase tracking-widest font-bold">Sin archivos abiertos</p>
+                    <p class="text-[9px] text-text/30 font-mono">Presiona Ctrl+P para buscar</p>
                 </div>
             </div>
         {/if}
-    </div>
 </div>

@@ -11,10 +11,9 @@ class FileStack {
     files = $state<GenericFile[]>([]);
     rootPath = $state<string | null>(null);
     expandedPaths = $state(new SvelteSet<string>());
-    
+    recentFiles = $state(new SvelteSet<GenericFile>());
     previewTabId = $state<string | null>(null);
     unsavedChanges = $state<Record<string, string>>({});
-    
     isSearching = $state(false);
     searchMode = $state<'files' | 'content'>('files');
 
@@ -75,6 +74,15 @@ class FileStack {
 
     collapseAll() {
         this.expandedPaths.clear();
+    }
+
+    addToHistory(file: GenericFile) {
+        if (!this.recentFiles.has(file))
+            this.recentFiles.add(file);
+    }
+
+    clearHistory() {
+        this.recentFiles.clear();
     }
 
     // --- Lógica de Pestañas y Caché ---
@@ -163,6 +171,7 @@ class FileStack {
         }
 
         tabsStack.openTab(newTab);
+        this.addToHistory(node);
     }
 
     async saveCurrentFile() {

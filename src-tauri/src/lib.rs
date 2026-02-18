@@ -8,15 +8,15 @@ use std::sync::Mutex;
 use std::path::PathBuf;
 use tauri::Manager;
 use crate::config::AppConfig;
-use crate::services::bridge::capabilities::lsp::LspManager;
-use crate::services::bridge::capabilities::mcp::McpManager;
 use crate::database::DbManager;
 use crate::kernel::fs::worker::{IndexingWorker, IndexingTask};
-use crate::kernel::terminal::TerminalManager; // Importado correctamente
+use crate::kernel::terminal::TerminalManager;
+use crate::services::bridge::BridgeService;
 
+// Importación de comandos
 use crate::commands::agent::*;
-use crate::commands::kernel::fs::*;
-use crate::commands::kernel::terminal::*;
+use crate::commands::kernel::{fs::*, terminal::*};
+use crate::commands::services::{bridge::*, orchestration::*};
 use crate::commands::config::*;
 
 /// Estado global de la aplicación para acceso rápido desde comandos
@@ -42,6 +42,14 @@ pub fn run() {
             let initial_config = AppConfig::load(config_dir.clone());
             let last_project = initial_config.last_project_path.clone();
             
+            // Determinar la raíz del proyecto para el BridgeService
+            let project_root = last_project
+                .as_ref()
+                .map(PathBuf::from)
+                .unwrap_or_else(|| config_dir.clone());
+
+            // Inicializamos el BridgeService (que internamente crea los Managers)
+            let bridge_service = BridgeService::new(project_root);
             let terminal_manager = TerminalManager::new(handle.clone());
 
             tauri::async_runtime::block_on(async move {
@@ -60,9 +68,11 @@ pub fn run() {
                     }
                 }
 
+                // Registramos los servicios en el estado de Tauri
                 handle.manage(db_manager);
                 handle.manage(indexer_tx);
                 handle.manage(terminal_manager);
+                handle.manage(bridge_service); // Vital para los comandos de bridge y orchestration
                 handle.manage(AppState {
                     config: Mutex::new(initial_config),
                 });
@@ -70,13 +80,13 @@ pub fn run() {
 
             Ok(())
         })
-        .manage(LspManager::new())
-        .manage(McpManager::new())
         .invoke_handler(tauri::generate_handler![
             // --- Configuración ---
             get_config,
             update_config,
 
+            // *** Kernel ***
+            
             // --- Filesystem ---
             get_file_tree,
             read_file,
@@ -96,6 +106,20 @@ pub fn run() {
             term_get_history,
             term_clear_history,
 
+            //  *** Services ***
+
+            // --- Bridge (Comandos directos al BridgeService) ---
+            boot_runtime,
+            stop_runtime,
+            load_config,
+            register_provider,
+            activate_provider,
+            ai_completion,
+            vcs_action,
+
+            //  --- Orchestration ---
+            discover_recommendations_for_project,
+
             // --- Agents ---
             send_chat_message,
             get_chat_history,
@@ -106,8 +130,6 @@ pub fn run() {
             update_thought_status,
             report_task_tdd_status,
             discover_agent_skills,
-
-            // --- Bridge ---
         ])
         .run(tauri::generate_context!())
         .expect("error while running MOD0");
