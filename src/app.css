@@ -14,28 +14,57 @@
     --bg-sidebar: #f8f8f9;
     --text-main: #09090b;
     --accent: #2563eb;
-    --border-subtle: rgba(0, 0, 0, 0.1);
+    --border-subtle: rgba(0, 0, 0, 0.08);
     color-scheme: light;
   }
 
-  .dark {
+  :root.dark, .dark {
     --bg-main: #09090b;
-    --bg-sidebar: #121214;
+    --bg-sidebar: #0f0f11;
     --text-main: #f4f4f5;
     --accent: #3b82f6;
-    --border-subtle: rgba(255, 255, 255, 0.1);
+    --border-subtle: rgba(255, 255, 255, 0.06);
     color-scheme: dark;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: transparent;
   }
 
   body {
     background-color: var(--bg-main);
     color: var(--text-main);
-    transition: background-color 0.3s, color 0.3s;
-    @apply antialiased;
+    -webkit-font-smoothing: antialiased;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  #app {
+    height: 100%;
+    width: 100%;
   }
 
   .theme-transitioning,
   .theme-transitioning * {
     transition: none !important;
+  }
+
+  .header-main {
+    @apply h-11 border-b border-border-subtle flex items-center bg-main/40 backdrop-blur-2xl justify-between relative z-50 select-none w-full;
+    -webkit-app-region: drag;
+  }
+
+  .control-btn {
+    @apply h-full px-4 flex items-center justify-center transition-colors text-text/60 hover:text-text hover:bg-white/10;
+    -webkit-app-region: no-drag;
+    pointer-events: auto;
+  }
+
+  .close-btn {
+    @apply hover:bg-red-500 hover:text-white;
   }
 }

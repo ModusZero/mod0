@@ -1,8 +1,7 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 
-// Centralización del nombre del archivo
 pub const CONFIG_FILE_NAME: &str = "config.json";
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -25,12 +24,12 @@ impl Default for AppConfig {
 impl AppConfig {
     pub fn load(config_dir: PathBuf) -> Self {
         let config_path = config_dir.join(CONFIG_FILE_NAME);
-        
+
         if !config_path.exists() {
-            fs::create_dir_all(&config_dir).ok();
+            let _ = fs::create_dir_all(&config_dir);
             let default_config = Self::default();
             let json = serde_json::to_string_pretty(&default_config).unwrap();
-            fs::write(config_path, json).ok();
+            let _ = fs::write(config_path, json);
             return default_config;
         }
 

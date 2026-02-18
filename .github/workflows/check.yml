@@ -1,0 +1,27 @@
+name: "Code Quality"
+
+on: [pull_request]
+
+jobs:
+  lint-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npm run check
+
+  lint-rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - name: Rust Check
+        run: |
+          cd src-tauri
+          cargo fmt --all -- --check
+          cargo clippy -- -D warnings

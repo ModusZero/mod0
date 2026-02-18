@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { settingsStack } from "$lib/runes/settings.svelte";
-    import { workStack } from "$lib/runes/work-config.svelte";
+    import { settingsStack } from "$lib/features/settings/settings-runes.svelte";
+    import { workStack } from "$lib/core/runes/work-modes.svelte";
 </script>
 
 <footer class="h-7 border-t border-border-subtle bg-sidebar flex items-center px-3 justify-between text-[10px]">
