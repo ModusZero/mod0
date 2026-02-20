@@ -1,8 +1,13 @@
-pub mod agent;
-pub mod files;
+pub mod artifact;
+pub mod editor;
+pub mod extension;
+pub mod file_index;
 pub mod history;
+pub mod project;
 pub mod session;
-pub mod workspace;
+pub mod skill;
+pub mod task;
+pub mod thought;
 
 pub struct Repository<'a> {
     pub pool: &'a sqlx::SqlitePool,

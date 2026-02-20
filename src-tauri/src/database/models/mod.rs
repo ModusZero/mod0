@@ -1,5 +1,4 @@
+pub mod kernel;
 pub mod agent;
-pub mod files;
-pub mod history;
-pub mod session;
-pub mod workspace;
+pub mod bridge;
+pub mod shell;

@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::database::{DbManager, models::files::Skill};
+use crate::database::{DbManager, models::bridge::Skill};
 
 pub struct SearchService;
 

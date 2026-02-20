@@ -1,4 +1,4 @@
-use crate::database::{DbManager, models::history::TerminalHistory};
+use crate::database::{DbManager, models::bridge::TerminalHistory};
 use regex::Regex;
 use lazy_static::lazy_static;
 

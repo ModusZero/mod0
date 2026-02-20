@@ -16,10 +16,28 @@ CREATE TABLE IF NOT EXISTS file_metadata (
     path TEXT PRIMARY KEY,
     last_modified DATETIME NOT NULL,
     size INTEGER NOT NULL,
-    file_type TEXT, -- 'text', 'binary'
-    language_id TEXT, -- Para que el LSP sepa qué servidor levantar (ej: 'rust', 'typescript')
+    file_type TEXT,
+    language_id TEXT,
     project_path TEXT NOT NULL,
-    FOREIGN KEY(project_path) REFERENCES project(path)
+    FOREIGN KEY(project_path) REFERENCES project(path) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS extension_registry (
+    id TEXT PRIMARY KEY,
+    version TEXT NOT NULL,
+    local_path TEXT NOT NULL,
+    is_enabled BOOLEAN DEFAULT 1,
+    config_schema TEXT,
+    manifest_cache TEXT
+);
+
+CREATE TABLE IF NOT EXISTS project_extensions (
+    project_path TEXT,
+    extension_id TEXT,
+    config_values TEXT,
+    PRIMARY KEY(project_path, extension_id),
+    FOREIGN KEY(project_path) REFERENCES project(path) ON DELETE CASCADE,
+    FOREIGN KEY(extension_id) REFERENCES extension_registry(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS skill (
@@ -36,58 +54,73 @@ CREATE TABLE IF NOT EXISTS skill (
 CREATE TABLE IF NOT EXISTS session (
     id TEXT PRIMARY KEY,
     project_path TEXT NOT NULL,
-    session_type TEXT NOT NULL, -- 'user_chat', 'agent_task', 'terminal'
-    name TEXT,                   -- Ej: "Fix login bug"
-    branch_name TEXT,            -- Opcional, para cuando el agente crea una rama
-    worktree_path TEXT,          -- RUTA FÍSICA si se usa un git worktree
-    status TEXT NOT NULL,        -- 'active', 'merging', 'completed', 'aborted'
+    session_type TEXT NOT NULL,
+    name TEXT,
+    branch_name TEXT,
+    worktree_path TEXT,
+    status TEXT NOT NULL,
+    is_ghost_session BOOLEAN DEFAULT 0,
+    base_commit_hash TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(project_path) REFERENCES project(path)
+    FOREIGN KEY(project_path) REFERENCES project(path) ON DELETE CASCADE
 );
-
 
 CREATE TABLE IF NOT EXISTS thought_node (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id TEXT NOT NULL,
     parent_id INTEGER,
-    node_type TEXT NOT NULL, -- Decision, Action, Observation
+    node_type TEXT NOT NULL,
     content TEXT NOT NULL,
-    status TEXT DEFAULT 'pending', -- pending, approved, rejected
+    status TEXT DEFAULT 'pending',
     metadata TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(session_id) REFERENCES session(id),
-    FOREIGN KEY(parent_id) REFERENCES thought_node(id)
+    FOREIGN KEY(session_id) REFERENCES session(id) ON DELETE CASCADE,
+    FOREIGN KEY(parent_id) REFERENCES thought_node(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS artifact (
+    id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL,
+    thought_node_id INTEGER,
+    artifact_type TEXT NOT NULL,
+    content TEXT NOT NULL,
+    version INTEGER DEFAULT 1,
+    checksum TEXT,
+    status TEXT DEFAULT 'draft',
+    FOREIGN KEY(session_id) REFERENCES session(id) ON DELETE CASCADE,
+    FOREIGN KEY(thought_node_id) REFERENCES thought_node(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS execution_tasks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id TEXT NOT NULL,
+    skill_id INTEGER,
     title TEXT NOT NULL,
-    status TEXT NOT NULL, -- Todo, In Progress, Testing, Done
-    tdd_status TEXT NOT NULL, -- Red, Green, Refactor
+    status TEXT NOT NULL,
+    tdd_status TEXT NOT NULL,
     error_log TEXT,
     position INTEGER NOT NULL DEFAULT 0,
-    FOREIGN KEY(session_id) REFERENCES session(id)
+    FOREIGN KEY(session_id) REFERENCES session(id) ON DELETE CASCADE,
+    FOREIGN KEY(skill_id) REFERENCES skill(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS editor_state (
     project_path TEXT PRIMARY KEY,
-    open_tabs TEXT, -- JSON array de rutas
+    open_tabs TEXT,
     active_tab TEXT,
-    layout_config TEXT, -- JSON con la posición de los paneles
-    FOREIGN KEY(project_path) REFERENCES project(path)
+    layout_config TEXT,
+    FOREIGN KEY(project_path) REFERENCES project(path) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS chat_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     project_path TEXT NOT NULL,
     session_id TEXT NOT NULL, 
-    role TEXT NOT NULL, 
+    role TEXT NOT NULL,
     content TEXT NOT NULL,
-    artifact_data TEXT, 
     timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(session_id) REFERENCES session(id),
-    FOREIGN KEY(project_path) REFERENCES project(path)
+    FOREIGN KEY(session_id) REFERENCES session(id) ON DELETE CASCADE,
+    FOREIGN KEY(project_path) REFERENCES project(path) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS terminal_history (
@@ -97,6 +130,6 @@ CREATE TABLE IF NOT EXISTS terminal_history (
     command TEXT NOT NULL,
     exit_code INTEGER,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(session_id) REFERENCES session(id),
-    FOREIGN KEY(project_path) REFERENCES project(path)
+    FOREIGN KEY(session_id) REFERENCES session(id) ON DELETE CASCADE,
+    FOREIGN KEY(project_path) REFERENCES project(path) ON DELETE CASCADE
 );
