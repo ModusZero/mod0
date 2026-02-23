@@ -1,11 +1,22 @@
+pub mod pty;
+pub mod persistence;
+
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use dashmap::DashMap;
 use tauri::{AppHandle};
 use std::path::PathBuf;
-use crate::infrastructure::runtime::terminal::{pty::PtyInstance, persistence::TerminalPersistence};
 use crate::database::{DbManager, models::kernel::terminal_history::TerminalHistory};
+use self::pty::PtyInstance;
+use self::persistence::TerminalPersistence;
 
+use serde::Serialize;
+
+#[derive(Serialize, Clone)]
+pub struct TerminalOutput {
+    pub session_id: String,
+    pub data: String,
+}
 
 pub struct TerminalManager {
     sessions: Arc<DashMap<String, Arc<Mutex<PtyInstance>>>>,

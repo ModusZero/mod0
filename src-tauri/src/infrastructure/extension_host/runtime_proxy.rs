@@ -1,6 +1,7 @@
 use super::manifest::{ExtensionManifest};
-use crate::infrastructure::transport::{
+use crate::infrastructure::utils::transport::{
     ProtocolType,
+    process::ProcessManager,
     stdio::StdioTransport,
     codec::{
         JsonRpcMessage, 
@@ -8,7 +9,6 @@ use crate::infrastructure::transport::{
         BridgePayload
     }
 };
-use crate::infrastructure::transport::process::ProcessManager;
 use std::sync::Arc;
 use std::path::PathBuf;
 use tauri::AppHandle;

@@ -1,4 +1,4 @@
-use crate::infrastructure::transport::ProtocolType;
+use crate::infrastructure::utils::transport::ProtocolType;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
