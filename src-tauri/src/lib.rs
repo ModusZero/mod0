@@ -1,23 +1,23 @@
 mod config;
-mod commands;
 mod database;
+mod infrastructure;
+mod domain;
 mod services;
-mod kernel;
+mod commands;
 
 use std::sync::Mutex;
 use std::path::PathBuf;
 use tauri::Manager;
 use crate::config::AppConfig;
 use crate::database::DbManager;
-use crate::kernel::fs::worker::{IndexingWorker, IndexingTask};
-use crate::kernel::terminal::TerminalManager;
-use crate::services::bridge::BridgeService;
+use crate::domain::runtime::fs::worker::{IndexingWorker, IndexingTask};
+use crate::domain::runtime::terminal::manager::TerminalManager;
 
-// Importación de comandos
 use crate::commands::agent::*;
 use crate::commands::kernel::{fs::*, terminal::*};
 use crate::commands::services::{bridge::*, orchestration::*};
 use crate::commands::config::*;
+use crate::services::external::ExternalService;
 
 /// Estado global de la aplicación para acceso rápido desde comandos
 pub struct AppState {
@@ -48,9 +48,8 @@ pub fn run() {
                 .map(PathBuf::from)
                 .unwrap_or_else(|| config_dir.clone());
 
-            // Inicializamos el BridgeService (que internamente crea los Managers)
-            let bridge_service = BridgeService::new(project_root);
-            let terminal_manager = TerminalManager::new(handle.clone());
+            let external_service = ExternalService::new(project_root);
+            let terminal_manager = TerminalManager::new(handle.clone(), db.clone());
 
             tauri::async_runtime::block_on(async move {
                 let db_path = config_dir.join("modus_zero.db");
@@ -72,7 +71,7 @@ pub fn run() {
                 handle.manage(db_manager);
                 handle.manage(indexer_tx);
                 handle.manage(terminal_manager);
-                handle.manage(bridge_service); // Vital para los comandos de bridge y orchestration
+                handle.manage(external_service);
                 handle.manage(AppState {
                     config: Mutex::new(initial_config),
                 });

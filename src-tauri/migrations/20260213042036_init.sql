@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS file_metadata (
     FOREIGN KEY(project_path) REFERENCES project(path) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS extension_registry (
+CREATE TABLE IF NOT EXISTS extension (
     id TEXT PRIMARY KEY,
     version TEXT NOT NULL,
     local_path TEXT NOT NULL,
@@ -31,13 +31,13 @@ CREATE TABLE IF NOT EXISTS extension_registry (
     manifest_cache TEXT
 );
 
-CREATE TABLE IF NOT EXISTS project_extensions (
+CREATE TABLE IF NOT EXISTS project_extension (
     project_path TEXT,
     extension_id TEXT,
     config_values TEXT,
     PRIMARY KEY(project_path, extension_id),
     FOREIGN KEY(project_path) REFERENCES project(path) ON DELETE CASCADE,
-    FOREIGN KEY(extension_id) REFERENCES extension_registry(id) ON DELETE CASCADE
+    FOREIGN KEY(extension_id) REFERENCES extension(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS skill (
@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS artifact (
     FOREIGN KEY(thought_node_id) REFERENCES thought_node(id) ON DELETE SET NULL
 );
 
-CREATE TABLE IF NOT EXISTS execution_tasks (
+CREATE TABLE IF NOT EXISTS task (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id TEXT NOT NULL,
     skill_id INTEGER,

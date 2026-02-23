@@ -1,6 +1,6 @@
 use tauri::State;
 use crate::database::DbManager;
-use crate::database::models::agent::{ThoughtNode, ExecutionTask};
+use crate::database::models::artifact::{ThoughtNode, Task};
 use crate::database::models::history::ChatHistory;
 
 // --- PERSISTENCIA DE CHAT & ARTEFACTOS (Blueprint Mode) ---
