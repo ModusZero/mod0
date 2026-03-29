@@ -1,7 +1,7 @@
 use tauri::{State};
 use crate::kernel::terminal::{TerminalManager, history::HistoryService};
-use crate::database::models::history::{TerminalHistory};
-use crate::database::DbManager;
+use crate::persistence::models::history::{TerminalHistory};
+use crate::persistence::DbManager;
 use std::path::PathBuf;
 
 #[tauri::command]

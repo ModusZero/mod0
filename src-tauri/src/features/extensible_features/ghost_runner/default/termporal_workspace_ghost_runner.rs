@@ -1,0 +1,1 @@
+// Ghost runner que crea un workspace temporal para correr los tests ahi

@@ -1,7 +1,7 @@
 use tauri::State;
-use crate::database::DbManager;
-use crate::database::models::artifact::{ThoughtNode, Task};
-use crate::database::models::history::ChatHistory;
+use crate::persistence::DbManager;
+use crate::persistence::models::artifact::{ThoughtNode, Task};
+use crate::persistence::models::history::ChatHistory;
 
 // --- PERSISTENCIA DE CHAT & ARTEFACTOS (Blueprint Mode) ---
 
@@ -112,7 +112,7 @@ pub async fn report_task_tdd_status(
 pub async fn discover_agent_skills(
     db: State<'_, DbManager>, 
     tags: Vec<String>
-) -> Result<Vec<crate::database::models::files::Skill>, String> {
+) -> Result<Vec<crate::persistence::models::files::Skill>, String> {
     let repo = db.repository();
     repo.get_skills_by_tags(tags)
         .await

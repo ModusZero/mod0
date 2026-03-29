@@ -1,15 +1,14 @@
 mod config;
-mod database;
-mod infrastructure;
-mod domain;
-mod services;
 mod commands;
+mod features;
+mod infrastructure;
+mod persistence;
 
 use std::sync::Mutex;
 use std::path::PathBuf;
 use tauri::Manager;
 use crate::config::AppConfig;
-use crate::database::DbManager;
+use crate::persistence::DbManager;
 use crate::domain::runtime::fs::worker::{IndexingWorker, IndexingTask};
 use crate::domain::runtime::terminal::manager::TerminalManager;
 

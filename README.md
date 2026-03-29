@@ -1,16 +1,16 @@
-# `Mod0` | The Architect’s Interface
+# `MOD0` | The Architect’s Interface
 
 <table width="100%" border="0">
   <tr>
     <td>
       <h3>[ES]</h3>
       <p>
-        Mod0 es un IDE Autónomo, Agnóstico y Agéntico diseñado para el paradigma <strong>Mind-to-Action</strong> y desarrollado por <strong>Modus Zero</strong>. Este permite liderar, gestionar y auditar el desarrollo de software ya no con "apoyo" de la IA, sino mediante el "uso" de esta, todo esto con precisión quirúrgica, máxima eficiencia y carga visual/mental mínima, permitiendo eliminar la fricción entre la intención y la ejecución.
+        MOD0 es un IDE Autónomo, Agnóstico y Agéntico diseñado para el paradigma <strong>Mind-to-Action</strong> y desarrollado por <strong>Modus Zero</strong>. Este permite liderar, gestionar y auditar el desarrollo de software ya no con "apoyo" de la IA, sino mediante el "uso" de esta, todo esto con precisión quirúrgica, máxima eficiencia y carga visual/mental mínima, permitiendo eliminar la fricción entre la intención y la ejecución.
       </p>
       <hr size="1" style="border:none; border-top:1px solid #30363d;" />
       <h3>[EN]</h3>
       <p>
-        Mod0 is an Autonomic, Agnostic, and Agentic IDE built for the <strong>Mind-to-Action</strong> paradigm and developed by <strong>Modus Zero</strong>. It allows to lead, manage and audit software development—not by "teaming" with AI, but "using" it, all this with swarms with surgical precision, maximum efficiency and minimum visual/mental overload, leading to the removal of the friction between intent and execution.
+        MOD0 is an Autonomic, Agnostic, and Agentic IDE built for the <strong>Mind-to-Action</strong> paradigm and developed by <strong>Modus Zero</strong>. It allows to lead, manage and audit software development—not by "teaming" with AI, but "using" it, all this with swarms with surgical precision, maximum efficiency and minimum visual/mental overload, leading to the removal of the friction between intent and execution.
       </p>
     </td>
     <td align="right" width="250">
@@ -143,4 +143,4 @@ npm run tauri dev
 npm run tauri build
 ```
 
-<p align="center"> <sub>Autónomo | Autonomic • Agnóstico | Agnostic • Agéntico | Agentic • 2026 • <strong>Mod0 por | by Modus Zero</strong></sub> </p>
+<p align="center"> <sub>Autónomo | Autonomic • Agnóstico | Agnostic • Agéntico | Agentic • 2026 • <strong>MOD0 por | by Modus Zero</strong></sub> </p>

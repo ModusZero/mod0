@@ -1,0 +1,1 @@
+// Aqui por cada peticion, accion, o etc se agregaran thought nodes para construir el thinking graph

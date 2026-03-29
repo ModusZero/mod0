@@ -1,7 +1,7 @@
 use tauri::State;
 use std::path::PathBuf;
 use tokio::sync::mpsc;
-use crate::database::DbManager;
+use crate::persistence::DbManager;
 use crate::kernel::fs::{
     nodes::FileNode,
     scanner,

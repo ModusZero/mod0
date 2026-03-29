@@ -1,7 +1,7 @@
 pub struct RawCodec;
 
 impl RawCodec {
-    /// Pasa los bytes directamente (agnóstico total)
+    /// Pasa los bytes directamente
     pub fn encode(data: Vec<u8>) -> Vec<u8> {
         data
     }
