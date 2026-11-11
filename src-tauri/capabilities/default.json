@@ -1,29 +1,23 @@
 {
-  "$schema": "../gen/schemas/desktop-schema.json",
-  "identifier": "main-capability",
-  "description": "Capacidades de MOD0",
-  "windows": [
-    "main"
-  ],
-  "permissions": [
-    "core:default",
-    "core:window:allow-maximize",
-    "core:window:allow-minimize",
-    "core:window:allow-toggle-maximize",
-    "core:window:allow-close",
-    "core:window:allow-set-resizable",
-    "core:window:allow-start-dragging",
-    "core:path:default",
-    "core:event:default",
-    "core:window:default",
-    "core:webview:default",
-    "core:webview:allow-set-webview-zoom",
-    "core:resources:default",
-    "core:menu:default",
-    "core:image:default",
-    "core:tray:default",
-    "opener:default",
-    "os:default",
-    "dialog:default"
-  ]
+    "$schema": "../gen/schemas/desktop-schema.json",
+    "identifier": "main-capability",
+    "description": "Capacidades de la ventana principal de MOD0",
+    "windows": ["main"],
+    "permissions": [
+        "core:default",
+        "core:window:allow-minimize",
+        "core:window:allow-maximize",
+        "core:window:allow-unmaximize",
+        "core:window:allow-toggle-maximize",
+        "core:window:allow-is-maximized",
+        "core:window:allow-close",
+        "core:window:allow-start-dragging",
+        "core:window:allow-set-focus",
+        "core:webview:allow-set-webview-zoom",
+        "dialog:default",
+        "notification:default",
+        "opener:default",
+        "os:default",
+        "window-state:default"
+    ]
 }
