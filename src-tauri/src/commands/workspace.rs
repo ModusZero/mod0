@@ -60,8 +60,18 @@ pub async fn fs_delete(_state: State<'_, AppState>, path: String) -> AppResult<(
 pub async fn fs_graph(
     _state: State<'_, AppState>,
     root: String,
-    depth: u32,
+    expanded: Vec<String>,
     refresh: bool,
 ) -> AppResult<DepGraph> {
-    blocking(move || deps::graph(&PathBuf::from(root), depth, refresh)).await
+    blocking(move || deps::graph(&PathBuf::from(root), &expanded, refresh)).await
+}
+
+/// Archivos que dependen (directa o indirectamente) de los archivos indicados.
+#[tauri::command]
+pub async fn fs_impact(
+    _state: State<'_, AppState>,
+    root: String,
+    paths: Vec<String>,
+) -> AppResult<Vec<String>> {
+    blocking(move || deps::impact(&PathBuf::from(root), &paths)).await
 }

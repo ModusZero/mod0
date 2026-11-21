@@ -54,6 +54,7 @@ pub fn run() {
             // --- App ---
             commands::app::app_info,
             commands::app::notify_test,
+            commands::app::profile_check,
             // --- Configuración ---
             commands::config::config_get,
             commands::config::config_update,
@@ -83,6 +84,7 @@ pub fn run() {
             commands::workspace::fs_rename,
             commands::workspace::fs_delete,
             commands::workspace::fs_graph,
+            commands::workspace::fs_impact,
             // --- Revisión (git) ---
             commands::review::git_info,
             commands::review::review_changes,

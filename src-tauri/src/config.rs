@@ -24,6 +24,8 @@ pub struct AppConfig {
     pub language: String,
     pub ui_scale: f64,
     pub reduce_motion: bool,
+    /// Guarda el archivo del editor automáticamente poco después de dejar de escribir.
+    pub auto_save: bool,
     pub terminal_font_size: u8,
     pub context_limit: u64,
     pub shell: Option<String>,
@@ -42,6 +44,7 @@ impl Default for AppConfig {
             language: "es".into(),
             ui_scale: 1.0,
             reduce_motion: false,
+            auto_save: false,
             terminal_font_size: 13,
             context_limit: 200_000,
             shell: None,
