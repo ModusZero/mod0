@@ -1,74 +1,75 @@
 <script lang="ts">
-    import { onMount, onDestroy } from 'svelte';
-    import { EditorView, basicSetup } from 'codemirror';
-    import { oneDark } from '@codemirror/theme-one-dark';
-    import { Compartment } from '@codemirror/state';
-    import { settingsStack } from '$lib/features/settings/settings-runes.svelte';
-    import { editorStack } from './editor-runes.svelte';
-    import type { CodeTab } from '$lib/core/types/tab';
+    import { Compartment, EditorState } from '@codemirror/state';
+    import { LanguageDescription } from '@codemirror/language';
+    import { languages } from '@codemirror/language-data';
+    import { EditorView, keymap } from '@codemirror/view';
+    import { basicSetup } from 'codemirror';
+    import { onDestroy, onMount, untrack } from 'svelte';
+    import { basename } from '#lib/core/utils/format';
+    import { editorTheme, highlightTheme } from './editor-theme';
 
-    let { tab }: { tab: CodeTab } = $props();
-    let editorElement: HTMLDivElement;
-    let view: EditorView;
-    
-    const themeConf = new Compartment();
-    const langConf = new Compartment();
+    interface Props {
+        path: string;
+        content: string;
+        /** Rutas de todas las pestañas abiertas (para descartar el estado de las cerradas). */
+        openPaths: string[];
+        onchange: (content: string) => void;
+        onsave: () => void;
+    }
 
-    onMount(async () => {
-        // Carga automática del lenguaje al iniciar
-        const langExtension = await editorStack.getDynamicLanguage(tab.label || 'file.txt');
+    let { path, content, openPaths, onchange, onsave }: Props = $props();
 
-        view = new EditorView({
-            doc: tab.content,
+    let host: HTMLDivElement;
+    let view: EditorView | null = null;
+    let current = '';
+
+    // Cada pestaña conserva su propio estado (cursor, historial de deshacer).
+    const states = new Map<string, EditorState>();
+    const language = new Compartment();
+
+    function create(doc: string): EditorState {
+        return EditorState.create({
+            doc,
             extensions: [
                 basicSetup,
-                langConf.of(langExtension),
-                themeConf.of(settingsStack.current.theme === 'dark' ? oneDark : []),
+                editorTheme,
+                highlightTheme,
+                language.of([]),
+                keymap.of([{ key: 'Mod-s', preventDefault: true, run: () => (onsave(), true) }]),
                 EditorView.updateListener.of((update) => {
-                    if (update.docChanged) {
-                        editorStack.updateContent(update.state.doc.toString());
-                    }
+                    if (update.docChanged) onchange(update.state.doc.toString());
                 }),
-                EditorView.theme({
-                    "&": { height: "100%", fontSize: "14px" },
-                    ".cm-scroller": { fontFamily: "'JetBrains Mono', monospace", lineHeight: "1.6" }
-                })
             ],
-            parent: editorElement
         });
-    });
+    }
 
-    // Cambio de archivo o lenguaje
-    $effect(() => {
-        if (view && tab.id) {
-            const currentDoc = view.state.doc.toString();
-            if (tab.content !== currentDoc) {
-                view.dispatch({
-                    changes: { from: 0, to: currentDoc.length, insert: tab.content }
-                });
-            }
-            
-            // Reconfiguración dinámica de lenguaje basado en el nuevo tab
-            editorStack.getDynamicLanguage(tab.label).then(lang => {
-                view.dispatch({
-                    effects: langConf.reconfigure(lang)
-                });
-            });
-        }
-    });
+    async function loadLanguage(target: string) {
+        const description = LanguageDescription.matchFilename(languages, basename(target));
+        const support = description ? await description.load().catch(() => null) : null;
+        if (target === current && view) view.dispatch({ effects: language.reconfigure(support ?? []) });
+    }
 
-    $effect(() => {
-        const handleKeys = (e: KeyboardEvent) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                e.preventDefault();
-                editorStack.saveFileChanges();
-            }
-        };
-        window.addEventListener('keydown', handleKeys);
-        return () => window.removeEventListener('keydown', handleKeys);
+    onMount(() => {
+        current = path;
+        view = new EditorView({ state: create(content), parent: host });
+        void loadLanguage(path);
     });
 
     onDestroy(() => view?.destroy());
+
+    $effect(() => {
+        const next = path;
+        if (!view || next === current) return;
+
+        states.set(current, view.state);
+        current = next;
+        view.setState(states.get(next) ?? create(untrack(() => content)));
+        void loadLanguage(next);
+    });
+
+    $effect(() => {
+        for (const key of states.keys()) if (!openPaths.includes(key)) states.delete(key);
+    });
 </script>
 
-<div class="h-full w-full overflow-hidden" bind:this={editorElement}></div>
+<div bind:this={host} class="h-full min-h-0 w-full"></div>

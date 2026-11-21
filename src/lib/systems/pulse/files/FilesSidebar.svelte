@@ -1,91 +1,100 @@
 <script lang="ts">
-	import { EllipsisVertical, Search as SearchIcon, FolderPlus, FilePlus, RefreshCw, Trash2 } from "lucide-svelte";
-	import { fileStack } from "$lib/features/system-atoms/pulse/files/files-runes.svelte";
-    import Menu from "$lib/components/common/Menu.svelte";
-    import FloatingPanel from "$lib/components/common/low-level/FloatingPanel.svelte";
-	import FileHistory from "$lib/features/system-atoms/pulse/files/FileHistory.svelte";
-	import FileSearch from "$lib/features/system-atoms/pulse/files/FileSearch.svelte";
-	import FileTree from "$lib/features/system-atoms/pulse/files/FileTree.svelte";
-	import type { GenericFile } from "$lib/core/types/tab";
+    import { FolderOpen, RefreshCw, Search } from '@lucide/svelte';
+    import EmptyState from '#lib/components/common/EmptyState.svelte';
+    import { t } from '#lib/core/i18n/utils.svelte';
+    import { openFolder } from '#lib/core/registry/actions';
+    import { filesStack } from '#lib/core/runes/files.svelte';
+    import { reviewStack } from '#lib/core/runes/review.svelte';
+    import { sessionsStack } from '#lib/core/runes/sessions.svelte';
+    import { toggleUIStack } from '#lib/core/runes/toggle-ui.svelte';
+    import type { ChangeStatus } from '#lib/core/types/files';
+    import { basename } from '#lib/core/utils/format';
+    import FileTreeNode from '#lib/features/system-atoms/pulse/files/FileTreeNode.svelte';
 
-	let searchQuery = $state("");
-	let viewMode = $state<'tree' | 'list'>('tree');
-	
-	// Control del menú de opciones
-	let menuAnchor = $state<HTMLElement | null>(null);
-	let showMenu = $state(false);
+    const session = $derived(sessionsStack.focused);
 
-	const projectActions = [
-		{ label: 'New File', icon: FilePlus, action: () => fileStack.createNewFile() },
-		{ label: 'New Folder', icon: FolderPlus, action: () => console.log('New Folder') },
-		{ label: 'Refresh Explorer', icon: RefreshCw, action: () => fileStack.openFolder(fileStack.rootPath!) },
-		{ label: 'Delete Project Cache', icon: Trash2, danger: true, action: () => console.log('Delete') },
-	];
+    const roots = $derived.by(() => {
+        const options = new Map<string, string>();
+        if (filesStack.projectPath) options.set(filesStack.projectPath, basename(filesStack.projectPath));
+        for (const item of sessionsStack.sessions) {
+            if (item.worktree && item.status !== 'exited') options.set(item.cwd, `${item.name} (worktree)`);
+        }
+        return [...options.entries()];
+    });
 
-	function filterRecursive(nodes: GenericFile[], query: string): GenericFile[] {
-		const q = query.toLowerCase();
-		return nodes.reduce((acc: GenericFile[], node) => {
-			const match = node.name.toLowerCase().includes(q);
-			if (node.is_dir) {
-				const children = node.children ? filterRecursive(node.children, query) : [];
-				if (match || children.length > 0) acc.push({ ...node, children });
-			} else if (match) {
-				acc.push(node);
-			}
-			return acc;
-		}, []);
-	}
+    /** Archivos escritos por cada sesión (ruta normalizada → colores de sesión). */
+    const touched = $derived.by(() => {
+        const map = new Map<string, number[]>();
+        for (const item of sessionsStack.sessions) {
+            for (const file of item.touched) {
+                const key = file.replace(/\\/g, '/');
+                map.set(key, [...(map.get(key) ?? []), item.colorIdx]);
+            }
+        }
+        return map;
+    });
 
-	const displayedFiles = $derived.by(() => {
-		if (!searchQuery.trim() || fileStack.searchMode === 'content') return fileStack.files;
-		return filterRecursive(fileStack.files, searchQuery);
-	});
+    /** Archivos que la sesión enfocada cambió (M/A/D/U), igual que el control de versiones de un editor. */
+    const changes = $derived(
+        new Map<string, ChangeStatus>(reviewStack.changes.map((change) => [change.path, change.status])),
+    );
+
+    // Mantiene la lista de cambios al día para marcar el árbol (sin cargar el diff).
+    $effect(() => {
+        void sessionsStack.focusedId;
+        void session?.kpis.filesChanged;
+        void reviewStack.reload(false);
+    });
+
+    const entries = $derived(filesStack.rootPath ? (filesStack.children[filesStack.rootPath] ?? []) : []);
 </script>
 
-<section class="flex flex-col h-full bg-sidebar border-r border-white/5 select-none relative">
-	<div class="p-4 flex items-center justify-between">
-		<span class="text-[10px] font-black uppercase tracking-[0.3em] opacity-20">Project</span>
-		<div class="flex gap-0.5">
-			<button 
-                title="Buscar"
-				onclick={() => fileStack.isSearching = !fileStack.isSearching}
-				class="p-1.5 hover:bg-white/10 rounded transition-colors {fileStack.isSearching ? 'text-accent bg-accent/5' : 'text-text/40'}"
-			>
-				<SearchIcon size={14}/>
-			</button>
-			
-			<button 
-				bind:this={menuAnchor}
-                title="Más opciones"
-				onclick={() => showMenu = !showMenu}
-				class="p-1.5 hover:bg-white/10 rounded text-text/40 hover:text-text transition-colors"
-			>
-				<EllipsisVertical size={14}/>
-			</button>
+{#if !filesStack.rootPath}
+    <EmptyState icon={FolderOpen} title={t('project.none')} hint={t('files.noProjectHint')}>
+        <button class="btn btn-primary" onclick={openFolder}>{t('project.open')}</button>
+    </EmptyState>
+{:else}
+    <div class="flex h-full flex-col">
+        <div class="panel-title">
+            <span>{t('files.title')}</span>
+            <div class="flex">
+                <button
+                    class="icon-btn size-6"
+                    title="Ctrl+P"
+                    onclick={() => toggleUIStack.openPalette('files')}><Search size={13} /></button
+                >
+                <button
+                    class="icon-btn size-6"
+                    title={t('common.refresh')}
+                    onclick={() => filesStack.refresh()}><RefreshCw size={13} /></button
+                >
+            </div>
+        </div>
 
-			{#if showMenu}
-				<FloatingPanel anchorEl={menuAnchor} offset={8}>
-					<Menu items={projectActions} onclose={() => showMenu = false} />
-				</FloatingPanel>
-			{/if}
-		</div>
-	</div>
+        {#if roots.length > 1}
+            <div class="px-2 pb-2">
+                <select
+                    class="input h-7"
+                    value={filesStack.rootPath}
+                    onchange={(event) => filesStack.setRoot(event.currentTarget.value)}
+                >
+                    {#each roots as [path, label] (path)}<option value={path}>{label}</option>{/each}
+                </select>
+            </div>
+        {/if}
 
-	{#if fileStack.isSearching}
-		<FileSearch bind:searchQuery bind:viewMode />
-	{/if}
+        {#if session && changes.size > 0}
+            <p class="px-3 pb-1.5 text-meta text-muted">
+                <span class="font-mono text-st-waiting">{changes.size}</span>
+                {t('files.changedBy')}
+                <span class="font-medium text-text">{session.name}</span>
+            </p>
+        {/if}
 
-	<div class="flex-1 overflow-y-auto custom-scroll">
-		<FileHistory />
-		
-		<div class="py-2">
-			{#if displayedFiles.length > 0}
-				<FileTree nodes={displayedFiles} />
-			{:else}
-				<div class="p-10 text-center opacity-20 text-[10px] font-bold uppercase">
-					{searchQuery ? 'No results' : 'Empty'}
-				</div>
-			{/if}
-		</div>
-	</div>
-</section>
+        <div class="min-h-0 flex-1 overflow-y-auto px-1 pb-2">
+            {#each entries as entry (entry.path)}
+                <FileTreeNode {entry} depth={0} root={filesStack.rootPath} {touched} {changes} />
+            {/each}
+        </div>
+    </div>
+{/if}
