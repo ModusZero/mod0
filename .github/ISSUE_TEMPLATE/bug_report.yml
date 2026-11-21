@@ -1,0 +1,43 @@
+name: Reportar un error
+description: Algo no funciona como debería
+labels: [bug]
+body:
+    - type: textarea
+      id: what
+      attributes:
+          label: ¿Qué pasó?
+          description: Describe el problema y lo que esperabas que ocurriera.
+      validations:
+          required: true
+    - type: textarea
+      id: steps
+      attributes:
+          label: Pasos para reproducirlo
+          placeholder: |
+              1. Abrir el proyecto…
+              2. Lanzar una sesión con…
+              3. …
+      validations:
+          required: true
+    - type: dropdown
+      id: os
+      attributes:
+          label: Sistema operativo
+          options: [Windows, macOS, Linux]
+      validations:
+          required: true
+    - type: input
+      id: version
+      attributes:
+          label: Versión de MOD0
+          description: Ajustes → Acerca de.
+    - type: input
+      id: cli
+      attributes:
+          label: CLI y versión
+          description: Por ejemplo, Claude Code 2.x. Indica si el perfil usa hooks.
+    - type: textarea
+      id: logs
+      attributes:
+          label: Registros o capturas
+          description: Salida de `npm run tauri dev` o una captura de pantalla (sin claves ni datos privados).
