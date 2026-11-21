@@ -2,7 +2,7 @@
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versionado semántico.
 
-## [0.3.0] - 2026-11-16
+## [0.3.0] - 2026-11-20
 
 "Cualquier CLI": proveedores, plan de la sesión y un mapa del proyecto explorable.
 

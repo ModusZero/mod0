@@ -709,8 +709,8 @@
         app_info: () => ({
             version: '0.3.0',
             hookPort: 51423,
-            dataDir: 'C:\\Users\\luke\\AppData\\Roaming\\com.luke.mod0',
-            configDir: 'C:\\Users\\luke\\AppData\\Roaming\\com.luke.mod0',
+            dataDir: 'C:\\Users\\luke\\AppData\\Roaming\\com.luishrosello.mod0',
+            configDir: 'C:\\Users\\luke\\AppData\\Roaming\\com.luishrosello.mod0',
             shell: 'pwsh.exe',
         }),
         notify_test: () => null,

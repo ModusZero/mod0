@@ -1,14 +1,14 @@
 # MOD0 · Contexto global del proyecto
 
 > Documento de contexto para Claude (fuente del proyecto) y para cualquier persona que llegue al repo.
-> **Se actualiza en cada release** junto con `docs/PLAN.md`. Última actualización: **0.3.0 · 2026-11-16**.
+> **Se actualiza en cada release** junto con `docs/PLAN.md`. Última actualización: **0.3.0 · 2026-11-20**.
 
 ## 1. Qué es MOD0
 
 Una app de escritorio (Tauri 2 + SvelteKit 3/Svelte 5) que funciona como **mission control para sesiones de CLI con IA**
 (principalmente Claude Code). No es un IDE clásico: es "una UI con tres tallitas y la CLI".
 
-**Dueño y único usuario objetivo**: Luis (Luke1606), tech lead; trabaja en Windows. Español como idioma de trabajo.
+**Dueño y único usuario objetivo**: Luis (luishrosello), tech lead; trabaja en Windows. Español como idioma de trabajo.
 
 ### Por qué existe (el flujo real)
 

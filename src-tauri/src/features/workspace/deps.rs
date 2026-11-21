@@ -229,10 +229,9 @@ fn resolve_js(spec: &str, dir: &str, index: &HashMap<&str, usize>) -> Option<usi
         join(dir, spec)
     } else if let Some(rest) = spec.strip_prefix("$lib/") {
         normalize(&format!("src/lib/{rest}"))
-    } else if let Some(rest) = spec.strip_prefix("@/").or_else(|| spec.strip_prefix("~/")) {
-        normalize(&format!("src/{rest}"))
     } else {
-        return None;
+        let rest = spec.strip_prefix("@/").or_else(|| spec.strip_prefix("~/"))?;
+        normalize(&format!("src/{rest}"))
     };
     probe(&base, index)
 }
