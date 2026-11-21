@@ -1,22 +1,52 @@
-/* Este rune gestiona el estado de los paneles de la UI (configuración, terminal, sidebar) */
-class ToggleUIStack {
-    /** * @type {boolean} Estado de expansión del panel de configuración
-     */
-    settingsOpen: boolean = $state(false);
+import { loadLocal, saveLocal } from '#lib/core/utils/storage';
 
-    /** * @type {boolean} Estado de expansión del panel de terminal
-     */
-    terminalOpen: boolean = $state(true);
-    
-    /** * @type {boolean} Estado de expansión del panel lateral
-     */
-    sidebarOpen: boolean = $state(true);
-
-    /* Métodos para alternar cada panel */
-    toggleSettings(): void { this.settingsOpen = !this.settingsOpen; }
-    toggleTerminal(): void { this.terminalOpen = !this.terminalOpen; }
-    toggleSidebar(): void { this.sidebarOpen = !this.sidebarOpen; }
+export interface NewSessionPreset {
+    name?: string;
+    profileId?: string;
+    prompt?: string;
+    taskId?: string;
 }
 
-/* Instancia única del estado de UI para toda la aplicación. */
+/** Estado de visibilidad y tamaño de los paneles del IDE. */
+class ToggleUIStack {
+    sidebarOpen = $state(loadLocal('ui.sidebarOpen', true));
+    railOpen = $state(loadLocal('ui.railOpen', true));
+    terminalOpen = $state(loadLocal('ui.terminalOpen', true));
+    sidebarWidth = $state(loadLocal('ui.sidebarWidth', 288));
+    terminalHeight = $state(loadLocal('ui.terminalHeight', 300));
+
+    paletteOpen = $state(false);
+    paletteMode = $state<'commands' | 'files'>('commands');
+    newSessionOpen = $state(false);
+    newSessionPreset = $state<NewSessionPreset>({});
+
+    toggleSidebar = () => this.persist('sidebarOpen', (this.sidebarOpen = !this.sidebarOpen));
+    toggleRail = () => this.persist('railOpen', (this.railOpen = !this.railOpen));
+    toggleTerminal = () => this.persist('terminalOpen', (this.terminalOpen = !this.terminalOpen));
+
+    setSidebarWidth(width: number) {
+        this.sidebarWidth = Math.min(520, Math.max(220, Math.round(width)));
+        saveLocal('ui.sidebarWidth', this.sidebarWidth);
+    }
+
+    setTerminalHeight(height: number) {
+        this.terminalHeight = Math.min(900, Math.max(140, Math.round(height)));
+        saveLocal('ui.terminalHeight', this.terminalHeight);
+    }
+
+    openPalette(mode: 'commands' | 'files' = 'commands') {
+        this.paletteMode = mode;
+        this.paletteOpen = true;
+    }
+
+    openNewSession(preset: NewSessionPreset = {}) {
+        this.newSessionPreset = preset;
+        this.newSessionOpen = true;
+    }
+
+    private persist(key: string, value: boolean) {
+        saveLocal(`ui.${key}`, value);
+    }
+}
+
 export const toggleUIStack = new ToggleUIStack();
