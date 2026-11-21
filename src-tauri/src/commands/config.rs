@@ -1,20 +1,20 @@
-use crate::AppState;
+use tauri::State;
+
 use crate::config::AppConfig;
-use tauri::{State, AppHandle, Manager};
+use crate::core::error::AppResult;
+use crate::core::state::AppState;
 
 #[tauri::command]
-pub fn get_config(state: State<AppState>) -> AppConfig {
-    state.config.lock().unwrap().clone()
+pub async fn config_get(state: State<'_, AppState>) -> AppResult<AppConfig> {
+    Ok(state.config.get())
 }
 
 #[tauri::command]
-pub fn update_config(
-    app_handle: AppHandle, 
-    state: State<AppState>, 
-    new_config: AppConfig
-) -> Result<(), String> {
-    let mut config = state.config.lock().unwrap();
-    *config = new_config;
-    let config_dir = app_handle.path().app_config_dir().map_err(|e| e.to_string())?;
-    config.save(config_dir)
+pub async fn config_update(state: State<'_, AppState>, config: AppConfig) -> AppResult<AppConfig> {
+    state.config.replace(config)
+}
+
+#[tauri::command]
+pub async fn config_set_project(state: State<'_, AppState>, path: String) -> AppResult<AppConfig> {
+    state.config.touch_project(&path)
 }

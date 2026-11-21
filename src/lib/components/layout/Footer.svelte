@@ -1,20 +1,36 @@
 <script lang="ts">
-    import { settingsStack } from "$lib/features/settings/settings-runes.svelte";
-    import { workStack } from "$lib/core/runes/work-modes.svelte";
+    import { GitBranch, Radio } from '@lucide/svelte';
+    import { t } from '#lib/core/i18n/utils.svelte';
+    import { filesStack } from '#lib/core/runes/files.svelte';
+    import { sessionsStack } from '#lib/core/runes/sessions.svelte';
+    import { settingsStack } from '#lib/core/runes/settings.svelte';
+
+    const session = $derived(sessionsStack.focused);
 </script>
 
-<footer class="h-7 border-t border-border-subtle bg-sidebar flex items-center px-3 justify-between text-[10px]">
-    <div class="flex gap-4 items-center text-text/60">
-        <div class="flex items-center gap-1.5">
-            <div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></div>
-            <span class="font-bold uppercase tracking-tighter">System Online</span>
-        </div>
+<footer
+    class="flex h-6 shrink-0 items-center justify-between border-t border-border-subtle bg-sidebar px-3 text-meta text-muted"
+>
+    <div class="flex items-center gap-4">
+        {#if session?.branch ?? filesStack.git?.branch}
+            <span class="flex items-center gap-1.5">
+                <GitBranch size={12} />
+                {session?.branch ?? filesStack.git?.branch}
+            </span>
+        {/if}
+        {#if session}
+            <span class="truncate">{session.name} · {session.profileName}</span>
+        {/if}
     </div>
-    
-    <div class="flex gap-4 items-center">
-        <span class="bg-accent/10 text-accent px-2 py-0.5 rounded font-bold uppercase tracking-tighter">
-            {workStack.mode}
+
+    <div class="flex items-center gap-4">
+        <span
+            class="flex items-center gap-1.5"
+            title={settingsStack.info?.hookPort ? `127.0.0.1:${settingsStack.info.hookPort}` : ''}
+        >
+            <Radio size={12} class={settingsStack.info?.hookPort ? 'text-ok' : 'text-faint'} />
+            {t('footer.observer')}
         </span>
-        <span class="text-text/40 uppercase font-bold">{settingsStack.current.theme} mode</span>
+        <span class="font-mono">v{settingsStack.info?.version ?? ''}</span>
     </div>
 </footer>

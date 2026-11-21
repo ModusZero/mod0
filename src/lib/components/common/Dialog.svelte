@@ -1,47 +1,52 @@
 <script lang="ts">
-	import { type Snippet } from 'svelte';
-	import Modal from './low-level/Modal.svelte';
+    import { X } from '@lucide/svelte';
+    import type { Snippet } from 'svelte';
 
-	let { title, variant = 'info', onclose, onconfirm, children, footer }: {
-		title: string,
-		variant?: 'info' | 'danger' | 'warning',
-		onclose: () => void,
-		onconfirm?: () => void,
-		children: Snippet,
-		footer?: Snippet
-	} = $props();
+    interface Props {
+        open: boolean;
+        title: string;
+        width?: string;
+        onclose: () => void;
+        children: Snippet;
+        footer?: Snippet;
+    }
 
-	const colors = {
-		info: 'text-accent',
-		danger: 'text-red-500',
-		warning: 'text-yellow-500'
-	};
+    let { open, title, width = '30rem', onclose, children, footer }: Props = $props();
+
+    function onKeydown(event: KeyboardEvent) {
+        if (event.key === 'Escape') {
+            event.stopPropagation();
+            onclose();
+        }
+    }
 </script>
 
-<Modal {onclose}>
-	<div class="w-100 bg-main border border-border-subtle rounded-2xl overflow-hidden flex flex-col">
-		<header class="p-4 border-b border-border-subtle bg-sidebar/50 flex items-center justify-between">
-			<h3 class="text-xs font-bold uppercase tracking-widest {colors[variant]}">{title}</h3>
-		</header>
-		
-		<div class="p-6 text-sm text-text/80 leading-relaxed">
-			{@render children()}
-		</div>
-
-		<footer class="p-4 bg-sidebar/30 flex justify-end gap-3 border-t border-border-subtle">
-			<button onclick={onclose} class="px-4 py-2 text-xs hover:bg-white/5 rounded-full transition-colors">
-				Cancelar
-			</button>
-			{#if footer}
-				{@render footer()}
-			{:else}
-				<button 
-					onclick={() => { onconfirm?.(); onclose(); }}
-					class="px-5 py-2 {variant === 'danger' ? 'bg-red-600' : 'bg-text text-main'} rounded-full text-xs font-bold hover:opacity-90"
-				>
-					Confirmar
-				</button>
-			{/if}
-		</footer>
-	</div>
-</Modal>
+{#if open}
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div
+        class="fixed inset-0 z-50 flex items-start justify-center bg-black/45 pt-[12vh]"
+        onkeydown={onKeydown}
+        onpointerdown={(event) => event.target === event.currentTarget && onclose()}
+    >
+        <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={title}
+            class="flex max-h-[76vh] flex-col rounded-xl border border-border-subtle bg-raised shadow-2xl"
+            style="width:min({width}, 94vw)"
+        >
+            <header
+                class="flex h-11 shrink-0 items-center justify-between border-b border-border-subtle pr-2 pl-4"
+            >
+                <h2 class="text-ui font-semibold">{title}</h2>
+                <button class="icon-btn" onclick={onclose} aria-label="Cerrar"><X size={15} /></button>
+            </header>
+            <div class="min-h-0 flex-1 overflow-y-auto p-4">{@render children()}</div>
+            {#if footer}
+                <footer class="flex shrink-0 justify-end gap-2 border-t border-border-subtle px-4 py-3">
+                    {@render footer()}
+                </footer>
+            {/if}
+        </div>
+    </div>
+{/if}

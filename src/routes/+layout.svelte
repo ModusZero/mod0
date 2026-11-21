@@ -1,67 +1,59 @@
 <script lang="ts">
-    import "../app.css";
-    import { type } from '@tauri-apps/plugin-os';
-    import { getCurrentWebview } from '@tauri-apps/api/webview';
-    import Header from "$lib/components/layout/Header.svelte";
-    import ActivityBar from "$lib/components/layout/ActivityBar.svelte";
-    import Sidebar from "$lib/components/layout/Sidebar.svelte";
-    import Footer from "$lib/components/layout/Footer.svelte";
-    import Terminal from "$lib/features/terminal/Terminal.svelte";
-    import Settings from "$lib/components/settings(future-migration)/Settings.svelte";
-  import { bridgeService } from "$lib/core/services/bridge-service";
-  import { fileStack } from "$lib/features/system-atoms/pulse/files/files-runes.svelte";
+    import '../app.css';
+    import { onMount, type Snippet } from 'svelte';
+    import ToastHost from '#lib/components/common/ToastHost.svelte';
+    import { t } from '#lib/core/i18n/utils.svelte';
+    import { filesStack } from '#lib/core/runes/files.svelte';
+    import { graphStack } from '#lib/core/runes/graph.svelte';
+    import { sessionsStack } from '#lib/core/runes/sessions.svelte';
+    import { settingsStack } from '#lib/core/runes/settings.svelte';
+    import { handleHotkey } from '#lib/features/workbench/hotkeys';
 
-    let { children } = $props();
-    let osType = $state(type()); 
+    let { children }: { children: Snippet } = $props();
 
-    
-    let zoomLevel = 1.0;
+    let ready = $state(false);
+    let failure = $state<string | null>(null);
 
-    async function changeZoom(delta: number) {
-        const webview = getCurrentWebview();
-        zoomLevel = Math.min(Math.max(zoomLevel + delta, 0.5), 1.0); // Limitar entre 50% y 100%
-        
-        await webview.setZoom(zoomLevel);
-    }
+    onMount(() => {
+        const cleanups: Array<() => void> = [];
 
-    $effect(() => {
-        if (fileStack.rootPath) {
-            bridgeService.discoverAndBoot(fileStack.rootPath);
-        }
-    });
+        // Captura (fase de captura) para que los atajos funcionen aunque el foco esté en la terminal.
+        window.addEventListener('keydown', handleHotkey, true);
+        cleanups.push(() => window.removeEventListener('keydown', handleHotkey, true));
 
-    $effect(() => {
-        // Escuchar Ctrl + / Ctrl -
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.ctrlKey) {
-                if (e.key === '+' || e.key === '=') { e.preventDefault(); changeZoom(0.1); }
-                if (e.key === '-') { e.preventDefault(); changeZoom(-0.1); }
-                if (e.key === '0') { e.preventDefault(); zoomLevel = 1.0; changeZoom(0); }
+        // Al volver a la ventana se refresca el árbol (no hay watchers de archivos).
+        const onFocus = () => void filesStack.refresh();
+        window.addEventListener('focus', onFocus);
+        cleanups.push(() => window.removeEventListener('focus', onFocus));
+
+        // Sin menú contextual del navegador: la app es de escritorio.
+        const blockMenu = (event: MouseEvent) => event.preventDefault();
+        window.addEventListener('contextmenu', blockMenu);
+        cleanups.push(() => window.removeEventListener('contextmenu', blockMenu));
+
+        (async () => {
+            try {
+                await settingsStack.load();
+                cleanups.push(await sessionsStack.init(), await graphStack.init());
+                cleanups.push(await filesStack.init());
+                ready = true;
+            } catch (error) {
+                failure = error instanceof Error ? error.message : String(error);
             }
-        };
+        })();
 
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
+        return () => cleanups.forEach((stop) => stop());
     });
 </script>
 
-<div class="flex flex-col h-screen w-screen overflow-hidden bg-main text-text selection:bg-accent/30 os-{osType}">
-    <Header />
-
-    <div class="flex flex-1 overflow-hidden relative">
-        <ActivityBar />
-        <Sidebar />
-
-        <main class="flex-1 flex flex-col min-w-0 min-h-0 relative">
-            <div class="flex-1 min-h-0 overflow-hidden">
-                {@render children()}
-            </div>
-
-            <Terminal />
-        </main>
+{#if failure}
+    <div class="flex h-full flex-col items-center justify-center gap-2 p-8 text-center">
+        <p class="font-medium text-danger">{t('boot.failed')}</p>
+        <p class="max-w-lg font-mono text-meta text-muted">{failure}</p>
+        <p class="text-meta text-faint">{t('boot.hint')}</p>
     </div>
+{:else if ready}
+    {@render children()}
+{/if}
 
-    <Footer />
-</div>
-
-<Settings />
+<ToastHost />

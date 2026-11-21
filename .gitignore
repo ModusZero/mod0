@@ -1,23 +1,24 @@
-# Wiki Repo Docs
-/docs
-
+# Dependencias y salidas de build
 node_modules
-debug
-target
 /build
-/package
-/.vscode
 /.svelte-kit
-
-**/mutants.out*/
-**/*.rs.bk
-*.pdb
-
-.DS_Store
-
+/package
 .env
 .env.*
 !.env.example
-
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Sistema operativo / editores
+.DS_Store
+Thumbs.db
+.idea
+.vscode/*
+!.vscode/extensions.json
+
+# Rust / Tauri
+/src-tauri/target
+/src-tauri/gen/schemas
+
+# Datos locales
+*.log

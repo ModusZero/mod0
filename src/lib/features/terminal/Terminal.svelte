@@ -1,61 +1,147 @@
 <script lang="ts">
-    import { X, Terminal as TerminalIcon } from "lucide-svelte";
-    import { toggleUIStack } from "$lib/core/runes/toggle-ui.svelte";
-    import ResizablePanel from "$lib/components/common/ResizablePanel.svelte";
+    import { FitAddon } from '@xterm/addon-fit';
+    import { WebglAddon } from '@xterm/addon-webgl';
+    import { Terminal } from '@xterm/xterm';
+    import '@xterm/xterm/css/xterm.css';
+    import { onDestroy, onMount } from 'svelte';
+    import { settingsStack } from '#lib/core/runes/settings.svelte';
+    import { terminalService } from '#lib/core/services/terminal-service';
+    import type { Session } from '#lib/core/types/session';
+    import { isAppShortcut } from '#lib/features/workbench/hotkeys';
+    import { terminalTheme } from './terminal-theme';
+
+    interface Props {
+        session: Session;
+        visible: boolean;
+    }
+
+    let { session, visible }: Props = $props();
+
+    let host: HTMLDivElement;
+    let term = $state.raw<Terminal | null>(null);
+    let fit: FitAddon | null = null;
+    let webgl: WebglAddon | null = null;
+    let observer: ResizeObserver | null = null;
+    let attached = false;
+    let frame = 0;
+
+    const alive = $derived(session.status !== 'exited');
+
+    async function attach() {
+        if (!term || attached) return;
+        attached = true;
+
+        try {
+            term.reset();
+            const history = await terminalService.attach(session.id, (bytes) => term?.write(bytes));
+            term.write(history);
+            fitNow();
+        } catch {
+            attached = false;
+        }
+    }
+
+    function fitNow() {
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => {
+            if (!host || host.clientWidth === 0) return;
+            fit?.fit();
+        });
+    }
+
+    function useWebgl(enabled: boolean) {
+        if (!term) return;
+        if (!enabled) {
+            webgl?.dispose();
+            webgl = null;
+            return;
+        }
+        if (webgl) return;
+
+        // WebGL acelera mucho el pintado, pero solo se activa en la terminal visible.
+        try {
+            webgl = new WebglAddon();
+            webgl.onContextLoss(() => {
+                webgl?.dispose();
+                webgl = null;
+            });
+            term.loadAddon(webgl);
+        } catch {
+            webgl = null;
+        }
+    }
+
+    onMount(() => {
+        const mono = getComputedStyle(document.documentElement).getPropertyValue('--font-mono').trim();
+        const instance = new Terminal({
+            fontFamily: mono || 'Consolas, monospace',
+            fontSize: settingsStack.config.terminalFontSize,
+            lineHeight: 1.2,
+            cursorBlink: false,
+            cursorStyle: 'bar',
+            scrollback: 5000,
+            macOptionIsMeta: true,
+            theme: terminalTheme(settingsStack.dark),
+        });
+
+        fit = new FitAddon();
+        instance.loadAddon(fit);
+        instance.open(host);
+
+        // Deja pasar los atajos de la aplicación y copia con Ctrl+C cuando hay selección.
+        instance.attachCustomKeyEventHandler((event) => {
+            if (isAppShortcut(event)) return false;
+            if (event.type === 'keydown' && event.ctrlKey && event.key === 'c' && instance.hasSelection()) {
+                void navigator.clipboard.writeText(instance.getSelection());
+                instance.clearSelection();
+                return false;
+            }
+            return true;
+        });
+
+        instance.onData((data) => void terminalService.write(session.id, data).catch(() => undefined));
+        instance.onResize(({ rows, cols }) => {
+            if (attached) void terminalService.resize(session.id, rows, cols).catch(() => undefined);
+        });
+
+        observer = new ResizeObserver(fitNow);
+        observer.observe(host);
+        term = instance;
+    });
+
+    onDestroy(() => {
+        cancelAnimationFrame(frame);
+        observer?.disconnect();
+        webgl?.dispose();
+        term?.dispose();
+        if (attached) void terminalService.detach(session.id).catch(() => undefined);
+    });
+
+    // Conectar al PTY mientras la sesión viva; avisar cuando termina.
+    $effect(() => {
+        if (!term) return;
+        if (alive) void attach();
+        else if (attached) {
+            attached = false;
+            term.write('\r\n\x1b[2m[proceso terminado]\x1b[0m\r\n');
+        }
+    });
+
+    $effect(() => {
+        if (!term) return;
+        useWebgl(visible);
+        if (visible) {
+            fitNow();
+            term.focus();
+        }
+    });
+
+    $effect(() => {
+        if (!term) return;
+        term.options.theme = terminalTheme(settingsStack.dark);
+        term.options.fontSize = settingsStack.config.terminalFontSize;
+        fitNow();
+    });
 </script>
 
-{#if toggleUIStack.terminalOpen}
-    <ResizablePanel 
-        direction="vertical" 
-        side="bottom" 
-        initialSize={200} 
-        minSize={80}
-        maxSize={600}
-    >
-        <section 
-            class="flex flex-col bg-main border-t border-border-subtle h-full w-full relative shrink-0 select-none"
-        >
-            <header class="flex items-center justify-between px-4 py-1.5 bg-sidebar/40 border-b border-border-subtle shrink-0">
-                <div class="flex items-center gap-2 text-[10px] font-bold text-text/60 uppercase tracking-tight">
-                    <TerminalIcon size={12} /> <span>Terminal</span>
-                </div>
-                <button 
-                    onclick={() => toggleUIStack.terminalOpen = false} 
-                    class="text-text/40 hover:text-text cursor-pointer p-0.5 transition-colors"
-                >
-                    <X size={14} />
-                </button>
-            </header>
-
-            <div class="p-4 font-mono text-xs text-text/80 space-y-1 overflow-y-auto flex-1 custom-terminal-scroll select-text">
-                <p class="text-accent">mod0@system:~$ <span class="text-text">npm run dev</span></p>
-                <p class="text-green-500 font-bold"> > mod0-ide@1.0.4 dev</p>
-                
-                <div class="flex gap-2 items-center">
-                    <span class="text-accent">mod0@system:~$</span>
-                    <input 
-                        type="text" 
-                        class="bg-transparent outline-none flex-1 border-none p-0 text-text" 
-                        spellcheck="false"
-                    />
-                </div>
-            </div>
-        </section>
-    </ResizablePanel>
-{/if}
-
-<style>
-    .custom-terminal-scroll::-webkit-scrollbar {
-        width: 6px;
-    }
-    .custom-terminal-scroll::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    .custom-terminal-scroll::-webkit-scrollbar-thumb {
-        background: rgba(128, 128, 128, 0.2);
-        border-radius: 10px;
-    }
-    .custom-terminal-scroll::-webkit-scrollbar-thumb:hover {
-        background: rgba(128, 128, 128, 0.4);
-    }
-</style>
+<div bind:this={host} class="h-full w-full bg-main" class:hidden={!visible}></div>

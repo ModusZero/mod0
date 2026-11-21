@@ -1,52 +1,52 @@
 <script lang="ts">
-    import { tabsStack } from "$lib/features/workbench/tabs/tabs-runes.svelte";
-    import CodeEditor from "$lib/features/editor/CodeEditor.svelte";
-    import TabManager from "$lib/features/workbench/tabs/TabManager.svelte";
-    import TabSwitcher from "$lib/features/workbench/tabs/TabSwitcher.svelte";
-    import { type CodeTab } from "$lib/core/types/tab";
-    import { settingsStack } from "$lib/features/settings/settings-runes.svelte";
-    import darkLogo from "$lib/assets/logo-dark.svg";
-    import lightLogo from "$lib/assets/logo-light.svg";
+    import { toggleUIStack } from '#lib/core/runes/toggle-ui.svelte';
+    import { workStack } from '#lib/core/runes/work-modes.svelte';
+    import ResizeHandle from '#lib/components/common/ResizeHandle.svelte';
+    import TerminalDock from '#lib/features/terminal/TerminalDock.svelte';
+    import EditorMainSpace from '#lib/systems/pulse/editor/EditorMainSpace.svelte';
+    import FilesMainSpace from '#lib/systems/pulse/files/FilesMainSpace.svelte';
+    import KanbanMainSpace from '#lib/systems/forge/kanban/KanbanMainSpace.svelte';
+    import ReviewMainSpace from '#lib/systems/pulse/review/ReviewMainSpace.svelte';
+    import SessionsMainSpace from '#lib/systems/forge/sessions/SessionsMainSpace.svelte';
+    import SettingsMainSpace from '#lib/systems/workspace/settings/SettingsMainSpace.svelte';
+    import ThinkingGraphMainSpace from '#lib/systems/forge/thinking-graph/ThinkingGraphMainSpace.svelte';
+
+    let startHeight = 0;
 </script>
 
-<div class="flex flex-col h-full w-full overflow-hidden bg-main">
-    {#if tabsStack.activeTab}
-        <nav class="flex h-9 bg-sidebar/20 border-b border-border-subtle shrink-0">
-            <TabManager />
-            <div class="flex-1 border-border-subtle"></div>
-        </nav>
-
-        <div class="flex-1 relative min-h-0 bg-main">
-            <TabSwitcher>
-                {#if tabsStack.activeTab.type === 'code'}
-                    <CodeEditor tab={(tabsStack.activeTab as CodeTab)} />
-                {:else}
-                    <div class="flex flex-col items-center justify-center h-full gap-2">
-                        <div class="p-4 rounded-full bg-accent/5">
-                            <svelte:component this={tabsStack.activeTab.icon} size={32} class={tabsStack.activeTab.color} />
-                        </div>
-                        <p class="text-[10px] font-mono uppercase tracking-[0.5em] text-text/20">
-                            Activity: {tabsStack.activeTab.label}
-                        </p>
-                    </div>
-                {/if}
-                
-                </TabSwitcher>
-            </div>
-        {:else}
-            <div class="flex flex-col items-center justify-center h-full gap-4">
-                <h1 class="text-4xl font-black opacity-50 select-none tracking-tighter">MOD0</h1>
-
-                <img 
-                    src={settingsStack.current.theme === 'dark' ? darkLogo : lightLogo} 
-                    alt="Logo" 
-                    class="h-40 w-40 opacity-40" 
-                />
-
-                <div class="flex flex-col items-center gap-1">
-                    <p class="text-[10px] text-text/50 uppercase tracking-widest font-bold">Sin archivos abiertos</p>
-                    <p class="text-[9px] text-text/30 font-mono">Presiona Ctrl+P para buscar</p>
-                </div>
-            </div>
+<main class="flex min-w-0 flex-1 flex-col overflow-hidden bg-main">
+    <section class="min-h-0 flex-1 overflow-hidden">
+        {#if workStack.activity === 'sessions'}
+            <SessionsMainSpace />
+        {:else if workStack.activity === 'thinking-graph'}
+            <ThinkingGraphMainSpace />
+        {:else if workStack.activity === 'kanban'}
+            <KanbanMainSpace />
+        {:else if workStack.activity === 'files'}
+            <FilesMainSpace />
+        {:else if workStack.activity === 'review'}
+            <ReviewMainSpace />
+        {:else if workStack.activity === 'editor'}
+            <EditorMainSpace />
+        {:else if workStack.activity === 'settings'}
+            <SettingsMainSpace />
         {/if}
-</div>
+    </section>
+
+    <!-- La terminal vive siempre montada (aunque oculta) para no perder el historial de las sesiones. -->
+    {#if toggleUIStack.terminalOpen}
+        <ResizeHandle
+            orientation="horizontal"
+            onstart={() => (startHeight = toggleUIStack.terminalHeight)}
+            ondrag={(delta) => toggleUIStack.setTerminalHeight(startHeight - delta)}
+        />
+    {/if}
+    <div
+        class="shrink-0 overflow-hidden border-t border-border-subtle {toggleUIStack.terminalOpen
+            ? ''
+            : 'hidden'}"
+        style="height:{toggleUIStack.terminalHeight}px"
+    >
+        <TerminalDock />
+    </div>
+</main>

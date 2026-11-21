@@ -1,27 +1,16 @@
-mod config;
 mod commands;
+mod config;
+mod core;
 mod features;
 mod infrastructure;
-mod persistence;
 
-use std::sync::Mutex;
-use std::path::PathBuf;
+use std::sync::Arc;
+
 use tauri::Manager;
-use crate::config::AppConfig;
-use crate::persistence::DbManager;
-use crate::domain::runtime::fs::worker::{IndexingWorker, IndexingTask};
-use crate::domain::runtime::terminal::manager::TerminalManager;
 
-use crate::commands::agent::*;
-use crate::commands::kernel::{fs::*, terminal::*};
-use crate::commands::services::{bridge::*, orchestration::*};
-use crate::commands::config::*;
-use crate::services::external::ExternalService;
-
-/// Estado global de la aplicación para acceso rápido desde comandos
-pub struct AppState {
-    pub config: Mutex<AppConfig>,
-}
+use crate::config::ConfigStore;
+use crate::core::state::{AppState, Paths};
+use crate::features::sessions::manager::SessionManager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -29,105 +18,81 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .setup(|app| {
             let handle = app.handle().clone();
-            let config_dir = handle.path().app_config_dir().expect("No se pudo obtener config_dir");
-            
-            if !config_dir.exists() {
-                std::fs::create_dir_all(&config_dir).unwrap();
-            }
+            let paths = Paths::resolve(&handle)?;
+            let config = Arc::new(ConfigStore::load(&paths));
 
-            let initial_config = AppConfig::load(config_dir.clone());
-            let last_project = initial_config.last_project_path.clone();
-            
-            // Determinar la raíz del proyecto para el BridgeService
-            let project_root = last_project
-                .as_ref()
-                .map(PathBuf::from)
-                .unwrap_or_else(|| config_dir.clone());
+            let sessions = SessionManager::new(handle, paths.clone(), config.clone());
+            sessions.load_persisted();
+            sessions.start_hook_server()?;
+            sessions.start_ticker();
 
-            let external_service = ExternalService::new(project_root);
-            let terminal_manager = TerminalManager::new(handle.clone(), db.clone());
-
-            tauri::async_runtime::block_on(async move {
-                let db_path = config_dir.join("modus_zero.db");
-                
-                let db_manager = DbManager::new(&db_path)
-                    .await
-                    .expect("Fallo crítico al inicializar la base de datos");
-
-                let indexer_tx = IndexingWorker::spawn(db_manager.clone());
-
-                if let Some(path_str) = last_project {
-                    let project_path = PathBuf::from(path_str);
-                    if project_path.exists() {
-                        let _ = indexer_tx.send(IndexingTask::FullScan(project_path)).await;
-                    }
-                }
-
-                // Registramos los servicios en el estado de Tauri
-                handle.manage(db_manager);
-                handle.manage(indexer_tx);
-                handle.manage(terminal_manager);
-                handle.manage(external_service);
-                handle.manage(AppState {
-                    config: Mutex::new(initial_config),
-                });
+            app.manage(AppState {
+                paths,
+                config,
+                sessions,
             });
 
+            // En macOS se conservan los controles nativos de la ventana.
+            #[cfg(target_os = "macos")]
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.set_decorations(true);
+            }
             Ok(())
         })
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::Destroyed = event {
+                if let Some(state) = window.try_state::<AppState>() {
+                    state.sessions.shutdown();
+                }
+            }
+        })
         .invoke_handler(tauri::generate_handler![
+            // --- App ---
+            commands::app::app_info,
+            commands::app::notify_test,
+            commands::app::profile_check,
             // --- Configuración ---
-            get_config,
-            update_config,
-
-            // *** Kernel ***
-            
-            // --- Filesystem ---
-            get_file_tree,
-            read_file,
-            write_file,
-            create_new_file,
-            create_new_dir,
-            rename_path,
-            delete_path,
-            global_search,
-            quick_open,
-
+            commands::config::config_get,
+            commands::config::config_update,
+            commands::config::config_set_project,
+            // --- Sesiones ---
+            commands::session::session_list,
+            commands::session::session_create,
+            commands::session::session_restart,
+            commands::session::session_stop,
+            commands::session::session_remove,
+            commands::session::session_rename,
+            commands::session::session_set_reviewed,
+            commands::session::session_graph,
+            commands::session::session_refresh,
             // --- Terminal ---
-            term_create_session,
-            term_write,
-            term_resize,
-            term_get_context,
-            term_get_history,
-            term_clear_history,
-
-            //  *** Services ***
-
-            // --- Bridge (Comandos directos al BridgeService) ---
-            boot_runtime,
-            stop_runtime,
-            load_config,
-            register_provider,
-            activate_provider,
-            ai_completion,
-            vcs_action,
-
-            //  --- Orchestration ---
-            discover_recommendations_for_project,
-
-            // --- Agents ---
-            send_chat_message,
-            get_chat_history,
-            clear_chat_history,
-            add_agent_thought,
-            get_agent_session_history,
-            sync_execution_task,
-            update_thought_status,
-            report_task_tdd_status,
-            discover_agent_skills,
+            commands::terminal::term_attach,
+            commands::terminal::term_detach,
+            commands::terminal::term_write,
+            commands::terminal::term_resize,
+            // --- Archivos ---
+            commands::workspace::fs_list_dir,
+            commands::workspace::fs_list_files,
+            commands::workspace::fs_read,
+            commands::workspace::fs_write,
+            commands::workspace::fs_create_file,
+            commands::workspace::fs_create_dir,
+            commands::workspace::fs_rename,
+            commands::workspace::fs_delete,
+            commands::workspace::fs_graph,
+            commands::workspace::fs_impact,
+            // --- Revisión (git) ---
+            commands::review::git_info,
+            commands::review::review_changes,
+            commands::review::review_file,
+            commands::review::review_commit,
+            // --- Kanban ---
+            commands::kanban::kanban_load,
+            commands::kanban::kanban_save,
         ])
         .run(tauri::generate_context!())
         .expect("error while running MOD0");

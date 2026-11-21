@@ -1,40 +1,16 @@
-import { invoke } from "@tauri-apps/api/core";
-import type { GenericFile } from "../types/tab";
+import { call } from '#lib/core/services/ipc';
+import type { DepGraph, DirEntryInfo } from '#lib/core/types/files';
 
-const FILE_COMMANDS = {
-    READ_FOLDER: "read_folder_recursive",
-    READ_FILE: "read_file_content",
-    SAVE_FILE: "save_file",
-    CREATE_FILE: "create_file",
-    CREATE_DIR: "create_dir",
-    RENAME_FILE: "rename_file",
-    DELETE_FILE: "delete_file",
-    SEARCH_CONTENT: "search_in_files"
-}
-
-export const FSService = {
-    async readFolder(path: string): Promise<GenericFile[]> {
-        return await invoke(FILE_COMMANDS.READ_FOLDER, { path });
-    },
-    async readFile(path: string): Promise<string> {
-        return await invoke(FILE_COMMANDS.READ_FILE, { path });
-    },
-    async saveFile(path: string, content: string): Promise<void> {
-        await invoke(FILE_COMMANDS.SAVE_FILE, { path, content });
-    },
-    async createFile(path: string): Promise<void>  { 
-        return await invoke(FILE_COMMANDS.CREATE_FILE, { path }); 
-    },
-    async createDir(path: string): Promise<void>  { 
-        return await invoke(FILE_COMMANDS.CREATE_DIR, { path }); 
-    },
-    async deleteFile(path: string): Promise<void>  { 
-        return await invoke(FILE_COMMANDS.DELETE_FILE, { path }); 
-    },
-    async renameFile(oldPath: string, newPath: string): Promise<void>  { 
-        return await invoke(FILE_COMMANDS.RENAME_FILE, { oldPath, newPath }); 
-    },
-    async searchContent(root: string, query: string): Promise<string[]> {
-        return await invoke(FILE_COMMANDS.SEARCH_CONTENT, { root, query });
-    }
+export const fsService = {
+    listDir: (path: string) => call<DirEntryInfo[]>('fs_list_dir', { path }),
+    listFiles: (root: string, limit?: number) => call<string[]>('fs_list_files', { root, limit }),
+    read: (path: string) => call<string>('fs_read', { path }),
+    write: (path: string, content: string) => call<void>('fs_write', { path, content }),
+    createFile: (path: string) => call<void>('fs_create_file', { path }),
+    createDir: (path: string) => call<void>('fs_create_dir', { path }),
+    rename: (from: string, to: string) => call<void>('fs_rename', { from, to }),
+    remove: (path: string) => call<void>('fs_delete', { path }),
+    graph: (root: string, expanded: string[], refresh = false) =>
+        call<DepGraph>('fs_graph', { root, expanded, refresh }),
+    impact: (root: string, paths: string[]) => call<string[]>('fs_impact', { root, paths }),
 };

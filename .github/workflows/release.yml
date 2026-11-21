@@ -1,68 +1,79 @@
-name: "Build & Release"
+name: Release
 
+# Se publica un borrador de release al subir una etiqueta `vX.Y.Z`.
 on:
-  push:
-    branches: [ "**" ] # Cualquier rama genera binarios de prueba
-    tags:
-      - 'v*'      # Solo los tags generan la Release oficial
-  pull_request:   # Los PRs también se prueban
+    push:
+        tags: ['v*']
+    workflow_dispatch:
+
+permissions:
+    contents: write
 
 jobs:
-  build-and-release:
-    permissions:
-      contents: write
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: "macos-latest"
-          - platform: "ubuntu-22.04"
-          - platform: "windows-latest"
+    verify-version:
+        name: Versión coherente con la etiqueta
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v5
+            - name: Comparar etiqueta, package.json, Cargo.toml y tauri.conf.json
+              if: startsWith(github.ref, 'refs/tags/v')
+              run: |
+                  tag="${GITHUB_REF_NAME#v}"
+                  pkg=$(node -p "require('./package.json').version")
+                  cargo=$(grep -m1 '^version' src-tauri/Cargo.toml | cut -d'"' -f2)
+                  tauri=$(node -p "require('./src-tauri/tauri.conf.json').version")
+                  echo "tag=$tag package=$pkg cargo=$cargo tauri=$tauri"
+                  [ "$tag" = "$pkg" ] && [ "$tag" = "$cargo" ] && [ "$tag" = "$tauri" ]
 
-    runs-on: ${{ matrix.platform }}
-    steps:
-      - uses: actions/checkout@v4
+    publish:
+        name: Compilar (${{ matrix.label }})
+        needs: verify-version
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - label: Windows
+                      os: windows-latest
+                      args: --bundles nsis
+                    - label: macOS (Apple Silicon)
+                      os: macos-latest
+                      args: --target aarch64-apple-darwin --bundles dmg
+                    - label: macOS (Intel)
+                      os: macos-latest
+                      args: --target x86_64-apple-darwin --bundles dmg
+                    - label: Linux
+                      os: ubuntu-22.04
+                      args: --bundles appimage,deb
+        runs-on: ${{ matrix.os }}
+        steps:
+            - uses: actions/checkout@v5
 
-      - name: setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
+            - name: Dependencias de Tauri (Linux)
+              if: matrix.os == 'ubuntu-22.04'
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libsoup-3.0-dev libjavascriptcoregtk-4.1-dev
 
-      - name: install Rust stable
-        uses: dtolnay/rust-toolchain@stable
+            - uses: actions/setup-node@v5
+              with:
+                  node-version: '24'
+                  cache: npm
+            - uses: dtolnay/rust-toolchain@stable
+              with:
+                  targets: ${{ startsWith(matrix.os, 'macos') && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+            - uses: Swatinem/rust-cache@v2
+              with:
+                  workspaces: src-tauri
 
-      - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-22.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+            - run: npm ci
 
-      - name: install frontend dependencies
-        run: npm install
-
-      # Construir la app
-      # Si es un tag, tauri-action intentará crear la release.
-      # Si no es un tag, simplemente compilará los binarios.
-      - name: tauri build
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: ${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || '' }}
-          releaseName: "MOD0 Release ${{ github.ref_name }}"
-          releaseDraft: true
-          prerelease: false
-
-      # Subir Artifacts (en cada push a cualquier rama obtener los .exe, .dmg, etc)
-      - name: upload test artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: MOD0-Test-Build-${{ matrix.platform }}
-          path: |
-            src-tauri/target/release/bundle/msi/*.msi
-            src-tauri/target/release/bundle/setup.exe
-            src-tauri/target/release/bundle/dmg/*.dmg
-            src-tauri/target/release/bundle/deb/*.deb
-            src-tauri/target/release/bundle/appimage/*.AppImage
-          retention-days: 5 # Los builds de prueba se borran en 5 días para no llenar la cuota
+            - uses: tauri-apps/tauri-action@v0
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  tagName: ${{ github.ref_name }}
+                  releaseName: 'MOD0 ${{ github.ref_name }}'
+                  releaseBody: 'Consulta el CHANGELOG para ver los cambios. Los instaladores no están firmados: Windows y macOS pueden mostrar una advertencia la primera vez.'
+                  releaseDraft: true
+                  prerelease: false
+                  args: ${{ matrix.args }}
