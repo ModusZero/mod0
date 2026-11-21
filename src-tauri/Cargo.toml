@@ -1,6 +1,6 @@
 [package]
 name = "mod0"
-version = "0.2.0"
+version = "0.3.0"
 description = "Mission control para tus sesiones de CLI con IA | Mission control for your AI CLI sessions"
 authors = ["Luis Alberto Hernández Roselló"]
 license = "Apache-2.0"

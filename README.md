@@ -1,146 +1,138 @@
-# `MOD0` | The Architect’s Interface
+<div align="center">
 
-<table width="100%" border="0">
-  <tr>
-    <td>
-      <h3>[ES]</h3>
-      <p>
-        MOD0 es un IDE Autónomo, Agnóstico y Agéntico diseñado para el paradigma <strong>Mind-to-Action</strong> y desarrollado por <strong>Modus Zero</strong>. Este permite liderar, gestionar y auditar el desarrollo de software ya no con "apoyo" de la IA, sino mediante el "uso" de esta, todo esto con precisión quirúrgica, máxima eficiencia y carga visual/mental mínima, permitiendo eliminar la fricción entre la intención y la ejecución.
-      </p>
-      <hr size="1" style="border:none; border-top:1px solid #30363d;" />
-      <h3>[EN]</h3>
-      <p>
-        MOD0 is an Autonomic, Agnostic, and Agentic IDE built for the <strong>Mind-to-Action</strong> paradigm and developed by <strong>Modus Zero</strong>. It allows to lead, manage and audit software development—not by "teaming" with AI, but "using" it, all this with swarms with surgical precision, maximum efficiency and minimum visual/mental overload, leading to the removal of the friction between intent and execution.
-      </p>
-    </td>
-    <td align="right" width="250">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" alt="logo-dark" srcset="https://github.com/user-attachments/assets/c2a5b10c-2cab-4b0c-b3aa-964726381a3b">
-        <source media="(prefers-color-scheme: light)" alt="logo" srcset="https://github.com/user-attachments/assets/08ee9e0c-f334-46e3-971b-bf82b6e67e54">
-        <img alt="logo-unified" src="https://github.com/user-attachments/assets/3f7a3e88-7dbb-4527-a9f9-b05c37361573" width="250"/>
-      </picture>
-    </td>
-  </tr>
-</table>
+<img src="static/logo-unified.svg" alt="MOD0" width="72" />
 
-## 🌐 Index / Índice
+# MOD0
 
-* **[Español (Especificaciones y Features)](#description-es)**
-* **[English (Specifications & Features)](#description-en)**
-* **[Manual (Instalación)](#bilingual-manual)**
+**Mission control para tus sesiones de CLI con IA.**
 
----
+Corre 8–15 sesiones de Claude Code en paralelo sin perder el hilo: ve qué hace cada una, en qué archivo trabaja,
+qué está pensando y cuál te necesita, sin leer muros de texto de terminal.
 
-<br id="description-es">
+[![CI](https://github.com/moduszero/mod0/actions/workflows/ci.yml/badge.svg)](https://github.com/moduszero/mod0/actions/workflows/ci.yml)
+![Tauri 2](https://img.shields.io/badge/Tauri-2-24c8db)
+![Svelte 5](https://img.shields.io/badge/Svelte-5-ff3e00)
+![Licencia](https://img.shields.io/badge/licencia-Apache--2.0-blue)
 
-# 🇪🇸 Versión en Español
+[English](README.en.md) · [Landing](https://moduszero.github.io/landing/es/products/mod0/) · [Documentación](docs/README.md) · [Contexto (IA)](docs/CONTEXT.md) · [Plan actual](docs/PLAN.md)
 
-## Tecnologías
+<img src="docs/screenshots/es/sessions.webp" alt="Mission Control con ocho sesiones" width="900" />
 
-| Componente | Tecnología | Propósito |
-| --- | --- | --- |
-| **Logic Core** | **Rust** | Orquestación de grafos, indexación SQLite y bridge con el SO. |
-| **Desktop Shell** | **Tauri v2** | Seguridad nativa, alto rendimiento y footprint mínimo (<20MB). |
-| **UI Framework** | **Svelte 5 (Runes)** | Interfaz reactiva de ultra-baja latencia para visualización de datos. |
-| **Protocolo** | **Native MCP** | Integración nativa con Model Context Protocol sin intermediarios. |
-| **Protocolo** | **Native LSP** | Múltiples intérpretes de lenguajes y tecnologías sin necesidad de plugins externos. |
+</div>
 
----
+> [!NOTE]
+> MOD0 **ya no es un producto comercial**. Es la herramienta que construyo para mi propio flujo de trabajo y se publica
+> tal cual: con opiniones, abierta y en cambio constante.
 
-## Principales Características
+## La idea
 
-### UI Mente-Plan (Blueprint Mode)
-* **Comunicación Usuario-IA:** A diferencia de un chat, no es para "leer" las respuestas de la IA (nadie las lee realmente de todas formas), escribe prompts y obtén respuestas simples y eficientes usando artefactos (dibujos simples, diagramas, tablas, etc) para transmitir la información sin un solo scroll y en un parrafo como máximo (los devs entendemos mejor 10 diagramas que un párrafo). Esta es accesible y completamente conectada con cualquier seccion del IDE.
-* **Planeación & Artifacts:** Espacio dedicado a diagramas ERD, de arquitectura o flujo (dependiendo de la tarea) o incluso un canvas de prototipos UI, todo antes de tocar una sola línea de código, completamente generado por IA pero igualmente customizable y traducible a código.
+Con la IA haciendo el trabajo pesado, el humano deja de "tirar prompts" y pasa a **revisar y orquestar**. El cuello de
+botella ya no es escribir código: es seguirle el hilo a varios flujos a la vez. Las CLI muestran un registro de texto que
+nadie lee de verdad, y los IDE clásicos traen mil funciones que no se tocan.
 
+MOD0 **envuelve la CLI que ya usas** y le pone una cabina encima:
 
-### Control y Auditoría (Forge Mode)
-* **Grafo de pensamiento & Tablero Kanban:** Visualiza el razonamiento, acciones y decisiones del agente en tiempo real (permite tambien controlar decisiones en caso de bifurcaciones o posibles opciones, tú sigues teniendo el control siempre que lo decidas) y visualiza/gestiona tareas en un tablero kanban.
-* **Sesiones de Agentes:** Worktrees/Branches gestionadas por agentes para multi-tasking masivo sin conflictos en el workspace, el límite es tu capacidad de control.
+| Pantalla               | Qué resuelve                                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Mission Control**    | Una tarjeta por sesión: estado, acción actual, tiempo en estado, contexto usado y cambios.                   |
+| **Panel de atención**  | Siempre visible: quién trabaja, quién está bloqueada pidiéndote algo y quién terminó. `Alt+1…9` para saltar. |
+| **Thinking Graph**     | El razonamiento de la sesión como grafo (lecturas, ediciones, comandos, ramas paralelas y su porqué).        |
+| **Grafo del proyecto** | Carpetas como módulos e imports como flechas, con anillos de color de la sesión que trabaja en cada módulo.  |
+| **Revisión**           | Diff por sesión contra el commit con el que empezó, archivos marcados como revisados y commit en un clic.    |
+| **Kanban**             | Tareas que lanzan sesiones (con su propio `git worktree`) y se mueven solas según el estado de la sesión.    |
+| **Editor**             | CodeMirror 6 para revisar y retocar. No pretende ser tu editor principal.                                    |
+| **Avisos**             | Escritorio + webhook (WhatsApp, Telegram, ntfy…) cuando una sesión te necesita o cuando _todo_ terminó.      |
 
-### Revisión especializada para evolución iterativa (Pulse Mode)
-* **Vista Híbrida:** Alterna entre Explorador de Archivos tradicional y Árbol de Archivos Visual usando grafos de dependencias.
-* **Control de Versiones Visual:** Incluido en el File Tree Visual, gestiona commits y ramas visualmente; entiende el impacto de cada cambio en lugar de leer Pull Requests kilométricas (también con una sección apartada para Control de Versiones con la UI tradicional).
+<div align="center">
+<img src="docs/screenshots/es/thinking-graph.webp" alt="Thinking graph" width="440" />
+<img src="docs/screenshots/es/files-graph.webp" alt="Grafo del proyecto" width="440" />
+<img src="docs/screenshots/es/review.webp" alt="Revisión" width="440" />
+<img src="docs/screenshots/es/kanban.webp" alt="Kanban" width="440" />
+</div>
 
-### Autonomía segura por TDD y eficiencia de tokens
-* **Ghost Runner Sandboxing:** Uso de worktrees/branches junto con un sandbox agresivo en para validar lógica y tests (TDD) antes de la implementación real.
-* **Inferencia-por-Dificultad:** Estrategia de asignación automática de modelos basada en dificultad de tasks para eficiencia de tokens.
+## Cómo observa sin gastar tokens
 
-### Contexto Agéntico
-* **Biblioteca de Skills Integrada :** Deja de instalar o gestionar skills manualmente en tu proyecto, conecta tu repositorio de skills a la base de datos, aunque sean miles de skills la IA los usará eficientemente.
-* **Gestión de Contexto:** Gestiona las skills activas (si quieres optimizar y controlar aún más y minimizar posibles alucinaciones) puedes activar o desactivar las que usas, como si fueran extensiones o plugins, no más skills como deps!
-* **Aprendizaje Reforzado Nativo:** Capacidad nativa de utilizar el TDD para aprender de casos de uso anteriores sin necesidad de configuraciones extra, todo en un entorno controlado (tú decides si guarda el conocimiento en tu pc para todos tus proyectos o si es solo por repositorio para total privacidad).
+- Cada sesión es una **terminal real (PTY)** que ejecuta tu shell y, dentro, la CLI.
+- Para **Claude Code**, MOD0 lanza la CLI con `--settings <archivo>` que registra _hooks HTTP_ hacia un servidor local
+  (`127.0.0.1`, puerto aleatorio y token por ejecución). Los hooks se **combinan** con los tuyos, no los reemplazan.
+- El _porqué_ de cada paso sale del **transcript JSONL** que Claude Code ya escribe (lectura incremental, solo lectura).
+- Con otras CLI (Codex, Gemini, cualquier comando) el estado se **infiere de la actividad de la terminal**; el thinking
+  graph y los estados exactos requieren los hooks de Claude Code.
 
-> [!TIP]
-> ### Aprovecha de la mejor forma el entorno sin cambiar drásticamente tu flujo de trabajo
-> * **Editor de código tradicional:** Cómo olvidar esto, la IA hará la mayoría pero siempre es bueno poder revisar o editar cambios pequeños, la idea no es que sea la forma principal de trabajo, pero no puede faltar de ninguna forma.
-> * **Flujos de trabajo personalizables:** Parecido a flujos de CI/CD, permite controlar la forma en que trabaja la IA, si usar o no generación de artefactos, si prefieres multi-tasking y/o control total, grado de libertad concedido a la IA para decisiones técnicas, si prefieres que la IA haga el control de versiones o avise de vez en cuando para que revises y subas cambios. Dependiendo de tu rol en el proyecto y dependiendo de tu forma de trabajar todo cambia, tú defines tu estilo.
-> * **Orientado a Local / BYOK:** Conexión personalizada con modelos cloud (BYOK) y self-host. Soporte total para modelos locales, trabajo offline y privacidad absoluta.
-> * **Plugins o extensiones:** Soporte para extensiones basadas en WASM usando Rust, Go, JavaScript o C/C++.
+Observar **nunca** cuesta una llamada a un modelo.
 
----
+## Empezar
 
-<br id="description-en">
-
-# 🇺🇸 English Version
-
-## Technologies
-
-| Component | Technology | Purpose |
-| --- | --- | --- |
-| **Logic Core** | **Rust** | Graph orchestration, SQLite indexing, and OS bridge. |
-| **Desktop Shell** | **Tauri v2** | Native security, high performance, and minimal footprint (<20MB). |
-| **UI Framework** | **Svelte 5 (Runes)** | Ultra-low latency reactive interface for data visualization. |
-| **Protocol** | **Native MCP** | Native Model Context Protocol integration without intermediaries. |
-| **Protocol** | **Native LSP** | Multiple language and technology interpreters without the need for external plugins. |
-
----
-
-## Key Features
-
-### Mind-to-Plan UI (Blueprint Mode)
-* **User-AI Communication:** Unlike a chat, this is not for "reading" AI responses (no one really reads them anyway); write prompts and get simple, efficient responses using artifacts (simple drawings, diagrams, tables, etc.) to convey information without a single scroll and in one paragraph at most (devs understand 10 diagrams better than a paragraph). This is accessible and fully connected to any section of the IDE.
-* **Planning & Artifacts:** Dedicated space for ERD, architecture, or flow diagrams (depending on the task) or even a UI prototype canvas—all before touching a single line of code. Fully AI-generated but equally customizable and translatable to code.
-
-### Control and Audit (Forge Mode)
-* **Thought Graph & Kanban Board:** Visualize agent reasoning, actions, and decisions in real-time (also allows for decision control in case of bifurcations or potential options; you remain in control whenever you choose) and visualize/manage tasks on a kanban board.
-* **Agent Sessions:** Agent-managed worktrees/branches for massive multitasking without workspace conflicts; the limit is your control capacity.
-
-### Specialized revision for incremental evolution (Pulse Mode)
-* **Hybrid View:** Switch between a traditional File Explorer and a Visual File Tree using dependency graphs.
-* **Visual Source Control:** Included in the Visual File Tree; manage commits and branches visually. Understand the impact of each change instead of reading kilometer-long Pull Requests (also features a separate section for Version Control with a traditional UI).
-
-### Safe Autonomy by using TDD, Multi-tasking and token efficiency
-* **Ghost Runner Sandboxing:** Use of worktrees/branches along with an aggressive sandbox to validate logic and tests (TDD) before actual implementation.
-* **Inference-by-Difficulty:** Automated model assignment strategy based on task difficulty for token efficiency.
-
-### Agentic Context
-* **Integrated Skills Library:** Stop installing or managing skills manually in your project; connect your skills repository to the database. Even with thousands of skills, the AI will use them efficiently.
-* **Context Management:** Manage active skills (to further optimize, control, and minimize potential hallucinations); you can activate or deactivate the ones you use, as if they were extensions or plugins—no more skills as deps!
-* **Native Reinforcement Learning:** Native ability to use TDD to learn from previous use cases without extra configurations, all within a controlled environment (you decide if knowledge is saved on your PC for all projects or per repository for total privacy).
-
-> [!TIP]
-> ### Use the best of the environment without drastically changing your workflow
-> * **Traditional Code Editor:** Can't forget this—the AI will do most of the work, but it's always good to be able to review or edit small changes. It’s not intended as the primary way of working, but it’s absolutely essential.
-> * **Customizable Workflows:** Similar to CI/CD flows, this allows you to control how the AI works—whether or not to use artifact generation, if you prefer multi-tasking and/or total control, the degree of freedom granted to the AI for technical decisions, and whether the AI handles version control or prompts you to review and push changes. Everything changes depending on your role and your way of working; you define your style.
-> * **Local-First / BYOK:** Custom connection with cloud models (BYOK) and self-hosting. Full support for local models, offline work, and absolute privacy.
-> * **Plugins or Extensions:** Support for WASM-based extensions using Rust, Go, JavaScript, or C/C++.
-
----
-
-<br id="bilingual-manual">
-
-## 📖 Manual
+Requisitos: [Node.js](https://nodejs.org) 22+, [Rust](https://rustup.rs) 1.85+ y los
+[requisitos de Tauri](https://v2.tauri.app/start/prerequisites/) de tu sistema. Además, `git` y la CLI que quieras usar.
 
 ```bash
-# 1. Instalar dependencias | Install deps
+git clone https://github.com/moduszero/mod0.git
+cd mod0
 npm install
-
-# 2. Iniciar entorno de desarrollo (Tauri + Svelte) | Start Dev
-npm run tauri dev
-
-# 3. Construir ejecutable nativo | Build native app
-npm run tauri build
+npm run tauri dev        # desarrollo
+npm run tauri build      # instalador (en src-tauri/target/release/bundle)
 ```
 
-<p align="center"> <sub>Autónomo | Autonomic • Agnóstico | Agnostic • Agéntico | Agentic • 2026 • <strong>MOD0 por | by Modus Zero</strong></sub> </p>
+### Perfiles de CLI y proveedores
+
+Ajustes → _Perfiles de CLI_ → _Añadir desde una plantilla_. MOD0 no implementa ningún proveedor: envuelve una CLI.
+
+- **Claude Code con otros proveedores** (OpenRouter, Z.ai, Qwen, DeepSeek, tu gateway): mantienes toda la observación.
+- **Aider, OpenCode, Qwen Code, Codex, Gemini**: terminal, revisión y estado inferido por actividad.
+- **Claves**: escribe `CLAVE=$VARIABLE` y MOD0 la lee del entorno de tu sistema al lanzar la sesión; no se guarda en ningún
+  archivo. Cada perfil muestra si la CLI está instalada y si faltan variables.
+
+Detalles en [docs/guide/providers.md](docs/guide/providers.md).
+
+### Avisos al móvil
+
+Ajustes → _Notificaciones_ → _Webhook_ y elige una plantilla (ntfy, Telegram, WhatsApp vía CallMeBot, JSON). Los
+marcadores disponibles son `{title}`, `{message}`, `{session}`, `{status}` y sus variantes `_url` y `_json`.
+
+## Atajos
+
+| Atajo                           | Acción                            |
+| ------------------------------- | --------------------------------- |
+| `Ctrl+K` / `Ctrl+Shift+P`       | Paleta de comandos                |
+| `Ctrl+P` / `Ctrl+Shift+O`       | Abrir archivo                     |
+| `Ctrl+Shift+N`                  | Nueva sesión                      |
+| `Alt+1…9`                       | Saltar a la sesión _n_            |
+| `Ctrl+Shift+A`                  | Siguiente sesión que te necesita  |
+| `Ctrl+1…6`                      | Cambiar de vista                  |
+| `` Ctrl+` ``                    | Mostrar/ocultar la terminal       |
+| `Ctrl+Shift+B` / `Ctrl+Shift+R` | Panel lateral / panel de atención |
+| `Ctrl +` / `Ctrl -` / `Ctrl 0`  | Zoom de la interfaz               |
+
+Dentro de la terminal solo se interceptan los atajos con `Ctrl+Shift` o `Alt+número`; el resto llega a la CLI.
+
+## Estructura
+
+```text
+src/                     Frontend (SvelteKit 3 en modo SPA, Svelte 5 con runes, Tailwind 4)
+  lib/core/              types · constants · runes (estado) · services (IPC) · registry · i18n · utils
+  lib/components/        common (piezas reutilizables) · layout (marco del IDE)
+  lib/features/          terminal · editor · workbench · system-atoms (piezas de cada pantalla)
+  lib/systems/           una carpeta por sección/actividad (MainSpace + Sidebar)
+src-tauri/src/           Backend (Rust, Tauri 2)
+  commands/              puente IPC: una función por comando
+  features/              sessions · terminal · observer · workspace · git · notifications · kanban
+  core/ · infrastructure/  errores, eventos, estado; almacenamiento atómico y procesos
+docs/                    CONTEXT.md (visión y arquitectura) · PLAN.md (tareas y releases)
+scripts/                 backend simulado y capturas de pantalla reproducibles
+```
+
+## Estado
+
+Versión **0.3.0**. El backend compila, pasa `clippy` y sus pruebas unitarias, y el frontend pasa `svelte-check` y el
+build. Lo que **aún no está verificado** en una máquina real (ver [PLAN](docs/PLAN.md)): el arranque completo con Claude
+Code real, ConPTY en Windows y los hooks HTTP de tu versión concreta de la CLI. Si algo falla, abre un issue con la
+plantilla.
+
+## Contribuir
+
+Lee [CONTRIBUTING.md](CONTRIBUTING.md). Para reportar vulnerabilidades, [SECURITY.md](SECURITY.md).
+
+## Licencia
+
+[Apache-2.0](LICENSE) © Luis Alberto Hernández Roselló

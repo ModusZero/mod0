@@ -1,0 +1,23 @@
+# MOD0 (ModusZero)
+
+> Mission control para sesiones de CLI con IA (Claude Code y otras): ve qué hace cada sesión, en qué archivo trabaja,
+> qué piensa y cuál te necesita. Herramienta personal, abierta y no comercial. App de escritorio (Tauri 2 + Svelte 5).
+
+## Documentación para personas
+
+- [Índice](docs/README.md)
+- [Primeros pasos](docs/getting-started.md)
+- [Conceptos](docs/guide/concepts.md)
+- [Proveedores y CLI](docs/guide/providers.md)
+- [Solución de problemas](docs/guide/troubleshooting.md)
+- [Arquitectura](docs/guide/architecture.md)
+
+## Contexto para IA
+
+- [Contexto global del proyecto](docs/CONTEXT.md): visión, decisiones, arquitectura, contratos IPC y convenciones.
+- [Plan actual](docs/PLAN.md): tareas y registro de releases.
+- [Guía de contribución](CONTRIBUTING.md)
+
+## Código
+
+- `src/`: frontend. `src-tauri/src/`: backend en Rust. `scripts/`: backend simulado y capturas.

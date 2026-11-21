@@ -1,0 +1,9 @@
+# Conexiones lentas o inestables: más paciencia y más reintentos al descargar crates.
+# (El error típico es "[28] Timeout was reached (Operation too slow. Less than 10 bytes/sec...)".)
+[http]
+timeout = 300
+low-speed-limit = 1
+multiplexing = false
+
+[net]
+retry = 10
