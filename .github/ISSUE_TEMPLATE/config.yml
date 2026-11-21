@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Documentación Mod0
-    url: https://github.com/ModusZero/Mod0/wiki
-    about: Revisa la doc antes de crear un issue.
+    - name: Preguntas y conversación
+      url: https://github.com/moduszero/mod0/discussions
+      about: Para dudas de uso o ideas abiertas, usa las discusiones.

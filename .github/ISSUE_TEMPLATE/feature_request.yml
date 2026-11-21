@@ -1,0 +1,19 @@
+name: Proponer una mejora
+description: Una idea para el flujo de trabajo con sesiones de CLI
+labels: [enhancement]
+body:
+    - type: textarea
+      id: problem
+      attributes:
+          label: ¿Qué problema de tu flujo resuelve?
+          description: MOD0 optimiza un flujo concreto (muchas sesiones en paralelo). Cuéntalo desde ahí.
+      validations:
+          required: true
+    - type: textarea
+      id: proposal
+      attributes:
+          label: ¿Cómo lo imaginas?
+    - type: textarea
+      id: alternatives
+      attributes:
+          label: Alternativas consideradas

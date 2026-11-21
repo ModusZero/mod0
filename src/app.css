@@ -1,70 +1,324 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-@theme {
-  --color-main: var(--bg-main);
-  --color-sidebar: var(--bg-sidebar);
-  --color-accent: var(--accent);
-  --color-text: var(--text-main);
-  --color-border-subtle: var(--border-subtle);
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ───────────────────────── Tokens de color ─────────────────────────
+ * Principios de diseño: superficies mate (sin negro/blanco puros), contraste suave,
+ * colores de estado desaturados y cero efectos costosos (sin blur ni transparencias de ventana).
+ */
+:root {
+    --ui-scale: 1;
+    --hue: 255;
+
+    --bg-main: #f4f5f7;
+    --bg-sidebar: #eceef2;
+    --bg-raised: #ffffff;
+    --bg-hover: rgb(22 32 52 / 0.06);
+    --bg-active: rgb(22 32 52 / 0.11);
+    --border-subtle: rgb(22 32 52 / 0.1);
+
+    --text-main: #1d2432;
+    --text-muted: #566175;
+    --text-faint: #8791a3;
+
+    --accent: oklch(0.52 0.15 var(--hue));
+    --accent-soft: oklch(0.52 0.15 var(--hue) / 0.12);
+    --accent-fg: #ffffff;
+
+    --st-working: #2f6fd6;
+    --st-waiting: #b4730a;
+    --st-review: #7650d6;
+    --st-idle: #6a7486;
+    --st-exited: #98a1b0;
+    --ok: #2b8a62;
+    --danger: #c4433b;
+
+    --f-read: #4f7fbf;
+    --f-write: #b4730a;
+    --f-exec: #2b8a62;
+    --f-search: #7650d6;
+    --f-web: #1f8aa0;
+    --f-agent: #c4568a;
+    --f-plan: #8a7a2a;
+    --f-think: #6a7486;
+    --f-other: #6a7486;
+
+    --s0: #3b78d8;
+    --s1: #2b8a62;
+    --s2: #b4730a;
+    --s3: #7650d6;
+    --s4: #c4568a;
+    --s5: #1f8aa0;
+    --s6: #c06a3c;
+    --s7: #7d8a3a;
+
+    --syn-keyword: #8a3fbf;
+    --syn-string: #2b7a4b;
+    --syn-number: #b4530a;
+    --syn-comment: #8791a3;
+    --syn-function: #2f6fd6;
+    --syn-type: #b4730a;
+    --syn-punct: #566175;
 }
 
-@layer base {
-  :root {
-    --bg-main: #ffffff;
-    --bg-sidebar: #f8f8f9;
-    --text-main: #09090b;
-    --accent: #2563eb;
-    --border-subtle: rgba(0, 0, 0, 0.08);
-    color-scheme: light;
-  }
+.dark {
+    --bg-main: #0f1115;
+    --bg-sidebar: #14171c;
+    --bg-raised: #1a1e25;
+    --bg-hover: rgb(255 255 255 / 0.045);
+    --bg-active: rgb(255 255 255 / 0.085);
+    --border-subtle: rgb(255 255 255 / 0.07);
 
-  :root.dark, .dark {
-    --bg-main: #09090b;
-    --bg-sidebar: #0f0f11;
-    --text-main: #f4f4f5;
-    --accent: #3b82f6;
-    --border-subtle: rgba(255, 255, 255, 0.06);
-    color-scheme: dark;
-  }
+    --text-main: #d3d8e0;
+    --text-muted: #8c95a5;
+    --text-faint: #5d6676;
 
-  html, body {
-    margin: 0;
-    padding: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    background-color: transparent;
-  }
+    --accent: oklch(0.72 0.12 var(--hue));
+    --accent-soft: oklch(0.72 0.12 var(--hue) / 0.14);
+    --accent-fg: #0f1115;
 
-  body {
-    background-color: var(--bg-main);
-    color: var(--text-main);
+    --st-working: #6aa5f7;
+    --st-waiting: #e3ad4a;
+    --st-review: #ad94f2;
+    --st-idle: #77839a;
+    --st-exited: #4b5463;
+    --ok: #55b78c;
+    --danger: #e8706a;
+
+    --f-read: #7aa7e0;
+    --f-write: #e3ad4a;
+    --f-exec: #55b78c;
+    --f-search: #ad94f2;
+    --f-web: #4fb8cf;
+    --f-agent: #e07aa8;
+    --f-plan: #c9b65a;
+    --f-think: #77839a;
+    --f-other: #77839a;
+
+    --s0: #6aa5f7;
+    --s1: #55b78c;
+    --s2: #e3ad4a;
+    --s3: #ad94f2;
+    --s4: #e07aa8;
+    --s5: #4fb8cf;
+    --s6: #e0946a;
+    --s7: #b3c070;
+
+    --syn-keyword: #c49bf0;
+    --syn-string: #8fcf9f;
+    --syn-number: #e8a76a;
+    --syn-comment: #5d6676;
+    --syn-function: #7db4f5;
+    --syn-type: #e3ad4a;
+    --syn-punct: #8c95a5;
+}
+
+[data-accent='blue'] {
+    --hue: 255;
+}
+[data-accent='teal'] {
+    --hue: 195;
+}
+[data-accent='violet'] {
+    --hue: 295;
+}
+[data-accent='amber'] {
+    --hue: 75;
+}
+[data-accent='rose'] {
+    --hue: 12;
+}
+
+@theme inline {
+    --color-main: var(--bg-main);
+    --color-sidebar: var(--bg-sidebar);
+    --color-raised: var(--bg-raised);
+    --color-hover: var(--bg-hover);
+    --color-active: var(--bg-active);
+    --color-border-subtle: var(--border-subtle);
+    --color-text: var(--text-main);
+    --color-muted: var(--text-muted);
+    --color-faint: var(--text-faint);
+    --color-accent: var(--accent);
+    --color-accent-soft: var(--accent-soft);
+    --color-accent-fg: var(--accent-fg);
+    --color-ok: var(--ok);
+    --color-danger: var(--danger);
+
+    --color-st-working: var(--st-working);
+    --color-st-waiting: var(--st-waiting);
+    --color-st-review: var(--st-review);
+    --color-st-idle: var(--st-idle);
+    --color-st-exited: var(--st-exited);
+
+    --color-f-read: var(--f-read);
+    --color-f-write: var(--f-write);
+    --color-f-exec: var(--f-exec);
+    --color-f-search: var(--f-search);
+    --color-f-web: var(--f-web);
+    --color-f-agent: var(--f-agent);
+    --color-f-plan: var(--f-plan);
+    --color-f-think: var(--f-think);
+    --color-f-other: var(--f-other);
+
+    --font-sans: 'Inter', ui-sans-serif, system-ui, 'Segoe UI Variable Text', 'Segoe UI', Roboto, sans-serif;
+    --font-mono:
+        'JetBrains Mono', 'Cascadia Code', 'Cascadia Mono', ui-monospace, Consolas, 'SF Mono', monospace;
+
+    --text-ui: 0.8125rem;
+    --text-ui--line-height: 1.45;
+    --text-meta: 0.6875rem;
+    --text-meta--line-height: 1.3;
+}
+
+/* ───────────────────────── Base ───────────────────────── */
+html {
+    font-size: calc(16px * var(--ui-scale));
     -webkit-font-smoothing: antialiased;
-    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  }
+    text-rendering: optimizeLegibility;
+}
 
-  #app {
+html,
+body {
     height: 100%;
-    width: 100%;
-  }
+    margin: 0;
+    overflow: hidden;
+}
 
-  .theme-transitioning,
-  .theme-transitioning * {
+body {
+    background: var(--bg-main);
+    color: var(--text-main);
+    font-family: var(--font-sans);
+    font-size: var(--text-ui);
+    line-height: 1.45;
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-active) transparent;
+}
+
+::selection {
+    background: var(--accent-soft);
+}
+
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+    border-radius: 4px;
+}
+
+button {
+    cursor: default;
+}
+
+/* ───────────────────────── Componentes base ───────────────────────── */
+@layer components {
+    .btn {
+        @apply inline-flex h-7 shrink-0 items-center justify-center gap-1.5 rounded-md border border-border-subtle bg-raised px-2.5 text-ui whitespace-nowrap text-text transition-colors hover:bg-hover disabled:pointer-events-none disabled:opacity-45;
+    }
+    .btn-primary {
+        @apply border-transparent bg-accent text-accent-fg hover:brightness-110;
+    }
+    .btn-ghost {
+        @apply border-transparent bg-transparent text-muted hover:bg-hover hover:text-text;
+    }
+    .btn-danger {
+        @apply text-danger hover:bg-danger/10;
+    }
+    .icon-btn {
+        @apply inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted transition-colors hover:bg-hover hover:text-text disabled:pointer-events-none disabled:opacity-40;
+    }
+    .input {
+        @apply h-8 w-full rounded-md border border-border-subtle bg-main px-2.5 text-ui text-text placeholder:text-faint focus:border-accent focus:outline-none;
+    }
+    textarea.input {
+        @apply h-auto min-h-16 resize-y py-1.5 leading-snug;
+    }
+    .label {
+        @apply mb-1 block text-meta font-medium tracking-wide text-muted uppercase;
+    }
+    .kbd {
+        @apply inline-flex h-4.5 items-center rounded border border-border-subtle bg-main px-1 font-mono text-[0.625rem] text-muted;
+    }
+    .panel-title {
+        @apply flex h-9 shrink-0 items-center justify-between px-3 text-meta font-semibold tracking-wider text-muted uppercase;
+    }
+    .row-hover {
+        @apply transition-colors hover:bg-hover;
+    }
+}
+
+/* ───────────────────────── Movimiento ───────────────────────── */
+@keyframes spin-slow {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes pulse-soft {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.45;
+    }
+}
+
+.anim-spin {
+    animation: spin-slow 1.8s linear infinite;
+}
+
+.anim-pulse {
+    animation: pulse-soft 2.2s ease-in-out infinite;
+}
+
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+    animation: none !important;
     transition: none !important;
-  }
+}
 
-  .header-main {
-    @apply h-11 border-b border-border-subtle flex items-center bg-main/40 backdrop-blur-2xl justify-between relative z-50 select-none w-full;
-    -webkit-app-region: drag;
-  }
+@media (prefers-reduced-motion: reduce) {
+    .anim-spin,
+    .anim-pulse {
+        animation: none;
+    }
+}
 
-  .control-btn {
-    @apply h-full px-4 flex items-center justify-center transition-colors text-text/60 hover:text-text hover:bg-white/10;
-    -webkit-app-region: no-drag;
-    pointer-events: auto;
-  }
+/* ───────────────────────── Terminal y editor ───────────────────────── */
+.xterm {
+    height: 100%;
+    padding: 6px 4px 0 10px;
+}
 
-  .close-btn {
-    @apply hover:bg-red-500 hover:text-white;
-  }
+.xterm-viewport {
+    background: transparent !important;
+}
+
+/* ───────────────────────── Vista de diferencias (CodeMirror merge) ───────────────────────── */
+.cm-merge-a .cm-changedLine,
+.cm-merge-a .cm-deletedLine {
+    background: color-mix(in srgb, var(--danger) 11%, transparent);
+}
+
+.cm-merge-b .cm-changedLine,
+.cm-merge-b .cm-insertedLine {
+    background: color-mix(in srgb, var(--ok) 11%, transparent);
+}
+
+.cm-merge-a .cm-changedText {
+    background: color-mix(in srgb, var(--danger) 30%, transparent);
+}
+
+.cm-merge-b .cm-changedText {
+    background: color-mix(in srgb, var(--ok) 30%, transparent);
+}
+
+.cm-collapsedLines {
+    background: var(--bg-sidebar) !important;
+    color: var(--text-faint) !important;
+    font-size: 0.6875rem;
 }

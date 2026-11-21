@@ -1,50 +1,53 @@
 <script lang="ts">
-    import { fade, fly } from 'svelte/transition';
-    import { cubicInOut } from 'svelte/easing';
-    import { workStack } from "$lib/core/runes/work-modes.svelte";
-    import { ActivityVisual } from "$lib/core/constants/work-config";
-    import { toggleUIStack } from '$lib/core/runes/toggle-ui.svelte';
-    import { type DisplayNode } from '$lib/core/types/work';
+    import {
+        ActivityByWork,
+        ActivityVisual,
+        WorkSectionIDs,
+        WorkSectionVisual,
+    } from '#lib/core/constants/work-config';
+    import { t } from '#lib/core/i18n/utils.svelte';
+    import { sessionsStack } from '#lib/core/runes/sessions.svelte';
+    import { workStack } from '#lib/core/runes/work-modes.svelte';
+    import type { ActivityID } from '#lib/core/types/work';
 
-    let activities = $derived(workStack.currentActivities);
+    const sections = Object.values(WorkSectionIDs);
+
+    /** Contador que se muestra sobre el icono de una actividad. */
+    function badge(activity: ActivityID): number {
+        if (activity === 'sessions') return sessionsStack.counts.waiting;
+        if (activity === 'review') return sessionsStack.counts.review;
+        return 0;
+    }
 </script>
 
-<aside class="w-14 flex flex-col items-center bg-sidebar border-r border-border-subtle z-40 relative select-none">
-    <nav class="flex-1 flex flex-col gap-4 w-full items-center">
-        {#each activities as activityId, i (activityId)}
-            {@const activity: DisplayNode = ActivityVisual[activityId]}
-            {#if activity}
-                {@const isActive: boolean = workStack.activeActivity === activityId}
-                <div in:fly={{ y: 8, duration: 400, delay: i * 40, easing: cubicInOut }}>
-                    <button 
-                        onclick={() => {
-                            if (isActive) {
-                                toggleUIStack.toggleSidebar();
-                            } else {
-                                workStack.setActivity(activityId)
-                            }
-                            }}
-                        aria-label="Actividad: {activity.label}"
-                        class="group relative flex items-center justify-center w-12 h-12 transition-all duration-300
-                        {isActive ? 'text-accent' : 'text-text/40 hover:text-text'}"
+<nav class="flex w-12 shrink-0 flex-col items-center gap-1 border-r border-border-subtle bg-sidebar py-2">
+    {#each sections as section, index (section)}
+        {#if index > 0}<div class="my-1 h-px w-5 bg-border-subtle"></div>{/if}
+
+        {#each ActivityByWork[section] as activity (activity)}
+            {@const visual = ActivityVisual[activity]}
+            {@const count = badge(activity)}
+            {@const active = workStack.activity === activity}
+            <button
+                class="relative flex size-9 items-center justify-center rounded-lg transition-colors {active
+                    ? 'bg-accent-soft text-accent'
+                    : 'text-muted hover:bg-hover hover:text-text'}"
+                title="{t(visual.label)}{visual.shortcut ? ` (${visual.shortcut})` : ''}"
+                aria-label={t(visual.label)}
+                aria-current={active}
+                onclick={() => workStack.setActivity(activity)}
+            >
+                {#if active}<span class="absolute top-2 -left-1.5 h-5 w-0.5 rounded-full bg-accent"
+                    ></span>{/if}
+                <visual.icon size={18} strokeWidth={1.75} />
+                {#if count > 0}
+                    <span
+                        class="absolute top-0.5 right-0.5 flex min-w-3.5 items-center justify-center rounded-full bg-st-waiting px-1 font-mono text-[0.5625rem] font-bold text-main"
                     >
-                        {#if isActive}
-                            <div 
-                                in:fade={{ duration: 200 }}
-                                class="absolute left-0 w-1 h-6 bg-accent rounded-r-full shadow-[2px_0_10px_var(--accent)]"
-                            ></div>
-                        {/if}
-
-                        <div class="relative z-10 p-2 rounded-xl group-hover:bg-accent/5 transition-colors">
-                            <activity.icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
-                        </div>
-
-                        <span class="absolute left-16 bg-sidebar text-text border border-border-subtle px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0 shadow-xl pointer-events-none z-50">
-                            {activity.label}
-                        </span>
-                    </button>
-                </div>
-            {/if}
+                        {count}
+                    </span>
+                {/if}
+            </button>
         {/each}
-    </nav>
-</aside>
+    {/each}
+</nav>

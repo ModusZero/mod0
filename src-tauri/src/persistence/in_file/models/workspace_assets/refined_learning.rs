@@ -1,1 +1,0 @@
-// No se si usarlo realmente, habria que implementarlo
