@@ -1,7 +1,7 @@
 # MOD0 · Contexto global del proyecto
 
 > Documento de contexto para Claude (fuente del proyecto) y para cualquier persona que llegue al repo.
-> **Se actualiza en cada release** junto con `docs/PLAN.md`. Última actualización: **0.3.0 · 2026-11-16**.
+> **Se actualiza en cada release** junto con `docs/PLAN.md`. Última actualización: **0.3.0 · 2026-11-20**.
 
 ## 1. Qué es MOD0
 

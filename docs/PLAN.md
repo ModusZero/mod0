@@ -1,7 +1,7 @@
 # MOD0 · Plan actual
 
 > Tareas vivas y registro de releases. **Claude lo actualiza en cada release** (ver `docs/CONTEXT.md` §7).
-> Versión actual: **0.3.0** · Última actualización: **2026-11-16**.
+> Versión actual: **0.3.0** · Última actualización: **2026-11-20**.
 
 ## Estado en una línea
 
@@ -52,11 +52,11 @@ con Claude Code**: es lo primero antes de añadir más funciones.
 | 2026-11-10 | Observación por hooks HTTP + transcript (cero tokens); sin hooks se infiere por actividad del PTY.             |
 | 2026-11-10 | `git` CLI en vez de libgit2; sin SQLite ni extensiones; sin watchers de archivos.                              |
 | 2026-11-10 | SvelteKit 3: configuración en `vite.config.ts` y alias `#lib` (en vez de `$lib`).                              |
-| 2026-11-16 | Agnóstico: Claude Code con endpoints compatibles primero; claves como `$NOMBRE`; sin asistente de proveedores. |
-| 2026-11-16 | Thinking graph como diagrama de fases por defecto; plan de `TodoWrite` visible.                                |
-| 2026-11-16 | Mapa del proyecto: expandible hasta archivos, con cambios e impacto; la revisión usa lista/árbol, no el grafo. |
-| 2026-11-16 | Sin wiki de GitHub: la documentación vive en `docs/` (la renderiza el landing) y hay `llms.txt`.               |
-| 2026-11-16 | Paquetes npm de Tauri fijados al mismo minor que los crates (evita el aviso de versiones desalineadas).        |
+| 2026-11-20 | Agnóstico: Claude Code con endpoints compatibles primero; claves como `$NOMBRE`; sin asistente de proveedores. |
+| 2026-11-20 | Thinking graph como diagrama de fases por defecto; plan de `TodoWrite` visible.                                |
+| 2026-11-20 | Mapa del proyecto: expandible hasta archivos, con cambios e impacto; la revisión usa lista/árbol, no el grafo. |
+| 2026-11-20 | Sin wiki de GitHub: la documentación vive en `docs/` (la renderiza el landing) y hay `llms.txt`.               |
+| 2026-11-20 | Paquetes npm de Tauri fijados al mismo minor que los crates (evita el aviso de versiones desalineadas).        |
 
 ## Deuda técnica conocida
 
@@ -68,7 +68,7 @@ con Claude Code**: es lo primero antes de añadir más funciones.
 
 ## Registro de releases
 
-### 0.3.0 · 2026-11-16 · "Cualquier CLI"
+### 0.3.0 · 2026-11-20 · "Cualquier CLI"
 
 **IDE**: plantillas de perfiles (Claude Code + OpenRouter/Z.ai/Qwen/DeepSeek/gateway; Aider, OpenCode, Qwen Code, Codex,
 Gemini, Codespace), comprobación de CLI y de variables `$NOMBRE`; plan de la sesión; thinking graph como diagrama;
