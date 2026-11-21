@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, LazyLock, Mutex};
@@ -12,6 +12,8 @@ use crate::core::error::AppResult;
 /// Tamaño máximo de un archivo fuente que se analiza.
 const MAX_SOURCE_BYTES: u64 = 512 * 1024;
 const MAX_FILES: usize = 20_000;
+const MAX_DIRS: usize = 5_000;
+const MAX_IMPACT: usize = 10_000;
 const SOURCE_EXTENSIONS: [&str; 13] = [
     "ts", "tsx", "js", "jsx", "mjs", "cjs", "svelte", "vue", "astro", "py", "rs", "css", "scss",
 ];
@@ -38,6 +40,8 @@ pub struct GraphNode {
     pub label: String,
     pub files: u32,
     pub bytes: u64,
+    /// `dir` (carpeta agregada, expandible) o `file` (archivo individual).
+    pub kind: &'static str,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -51,9 +55,11 @@ pub struct GraphEdge {
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DepGraph {
-    pub depth: u32,
+    /// Profundidad máxima de carpetas del proyecto.
     pub max_depth: u32,
     pub file_count: u32,
+    /// Todas las carpetas con código analizado (para expandir hasta un nivel dado).
+    pub dirs: Vec<String>,
     pub nodes: Vec<GraphNode>,
     pub edges: Vec<GraphEdge>,
 }
@@ -66,26 +72,34 @@ struct FileGraph {
 
 static CACHE: LazyLock<Mutex<HashMap<PathBuf, Arc<FileGraph>>>> = LazyLock::new(Default::default);
 
-/// Grafo de dependencias agregado por carpeta hasta `depth` niveles.
-pub fn graph(root: &Path, depth: u32, refresh: bool) -> AppResult<DepGraph> {
+/// Grafo a nivel de archivo del proyecto (cacheado por raíz; `refresh` fuerza un nuevo análisis).
+fn file_graph(root: &Path, refresh: bool) -> Arc<FileGraph> {
     let cached = if refresh {
         None
     } else {
         CACHE.lock().expect("deps cache").get(root).cloned()
     };
 
-    let file_graph = match cached {
-        Some(graph) => graph,
-        None => {
-            let built = Arc::new(scan(root));
-            CACHE
-                .lock()
-                .expect("deps cache")
-                .insert(root.to_path_buf(), built.clone());
-            built
-        }
-    };
-    Ok(aggregate(&file_graph, depth.max(1)))
+    cached.unwrap_or_else(|| {
+        let built = Arc::new(scan(root));
+        CACHE
+            .lock()
+            .expect("deps cache")
+            .insert(root.to_path_buf(), built.clone());
+        built
+    })
+}
+
+/// Grafo de dependencias agregado. Las carpetas de `expanded` se abren en sus hijos (carpetas o archivos);
+/// lo demás queda colapsado en un solo nodo. Con `expanded` vacío se ve el primer nivel.
+pub fn graph(root: &Path, expanded: &[String], refresh: bool) -> AppResult<DepGraph> {
+    let open: HashSet<String> = expanded.iter().cloned().collect();
+    Ok(aggregate(&file_graph(root, refresh), &open))
+}
+
+/// Archivos del proyecto que dependen (directa o indirectamente) de los archivos dados.
+pub fn impact(root: &Path, paths: &[String]) -> AppResult<Vec<String>> {
+    Ok(impact_of(&file_graph(root, false), paths))
 }
 
 fn scan(root: &Path) -> FileGraph {
@@ -278,32 +292,50 @@ fn resolve_rs_use(name: &str, dir: &str, index: &HashMap<&str, usize>) -> Option
     }
 }
 
-fn group_of(path: &str, depth: u32) -> String {
-    let dirs: Vec<&str> = path.split('/').collect();
-    let dirs = &dirs[..dirs.len().saturating_sub(1)];
-    if dirs.is_empty() {
-        ".".to_string()
-    } else {
-        dirs[..dirs.len().min(depth as usize)].join("/")
+/// Nodo al que pertenece un archivo: baja por las carpetas expandidas y se detiene en la primera colapsada.
+fn group_of(path: &str, expanded: &HashSet<String>) -> String {
+    let parts: Vec<&str> = path.split('/').collect();
+    let mut prefix = String::new();
+
+    for (index, part) in parts.iter().enumerate() {
+        if !prefix.is_empty() {
+            prefix.push('/');
+        }
+        prefix.push_str(part);
+
+        if index == parts.len() - 1 || !expanded.contains(&prefix) {
+            return prefix;
+        }
     }
+    prefix
 }
 
-fn aggregate(graph: &FileGraph, depth: u32) -> DepGraph {
+fn aggregate(graph: &FileGraph, expanded: &HashSet<String>) -> DepGraph {
     let mut nodes: BTreeMap<String, GraphNode> = BTreeMap::new();
+    let mut dirs: BTreeSet<String> = BTreeSet::new();
     let mut max_depth = 0;
 
     let groups: Vec<String> = graph
         .files
         .iter()
         .map(|(path, bytes)| {
-            max_depth = max_depth.max(path.matches('/').count() as u32);
-            let id = group_of(path, depth);
+            let depth = path.matches('/').count() as u32;
+            max_depth = max_depth.max(depth);
+
+            let parts: Vec<&str> = path.split('/').collect();
+            for end in 1..parts.len() {
+                dirs.insert(parts[..end].join("/"));
+            }
+
+            let id = group_of(path, expanded);
+            let kind = if id == *path { "file" } else { "dir" };
             let label = id.rsplit('/').next().unwrap_or(&id).to_string();
             let node = nodes.entry(id.clone()).or_insert(GraphNode {
                 id: id.clone(),
                 label,
                 files: 0,
                 bytes: 0,
+                kind,
             });
             node.files += 1;
             node.bytes += bytes;
@@ -320,15 +352,53 @@ fn aggregate(graph: &FileGraph, depth: u32) -> DepGraph {
     }
 
     DepGraph {
-        depth,
         max_depth,
         file_count: graph.files.len() as u32,
+        dirs: dirs.into_iter().take(MAX_DIRS).collect(),
         nodes: nodes.into_values().collect(),
         edges: weights
             .into_iter()
             .map(|((from, to), weight)| GraphEdge { from, to, weight })
             .collect(),
     }
+}
+
+/// Recorrido inverso: quién importa (directa o transitivamente) a los archivos semilla.
+fn impact_of(graph: &FileGraph, seeds: &[String]) -> Vec<String> {
+    let index: HashMap<&str, usize> = graph
+        .files
+        .iter()
+        .enumerate()
+        .map(|(i, (path, _))| (path.as_str(), i))
+        .collect();
+
+    let mut dependents: Vec<Vec<usize>> = vec![Vec::new(); graph.files.len()];
+    for (from, to) in &graph.edges {
+        dependents[*to].push(*from);
+    }
+
+    let seed_ids: HashSet<usize> = seeds
+        .iter()
+        .filter_map(|path| index.get(path.as_str()).copied())
+        .collect();
+    let mut seen = seed_ids.clone();
+    let mut queue: Vec<usize> = seed_ids.iter().copied().collect();
+
+    while let Some(current) = queue.pop() {
+        for dependent in &dependents[current] {
+            if seen.insert(*dependent) {
+                queue.push(*dependent);
+            }
+        }
+    }
+
+    let mut affected: Vec<String> = seen
+        .difference(&seed_ids)
+        .map(|i| graph.files[*i].0.clone())
+        .take(MAX_IMPACT)
+        .collect();
+    affected.sort();
+    affected
 }
 
 #[cfg(test)]
@@ -371,20 +441,56 @@ mod tests {
         );
     }
 
-    #[test]
-    fn aggregates_by_folder_depth() {
-        let graph = FileGraph {
+    fn sample() -> FileGraph {
+        FileGraph {
             files: vec![
                 ("src/a/x.ts".into(), 10),
                 ("src/a/y.ts".into(), 5),
                 ("src/b/z.ts".into(), 1),
+                ("README.ts".into(), 1),
             ],
+            // x -> z, y -> z, x -> y
             edges: vec![(0, 2), (1, 2), (0, 1)],
-        };
-        let aggregated = aggregate(&graph, 2);
-        assert_eq!(aggregated.nodes.len(), 2);
-        assert_eq!(aggregated.edges.len(), 1);
-        assert_eq!(aggregated.edges[0].weight, 2);
-        assert_eq!(aggregate(&graph, 1).nodes.len(), 1);
+        }
+    }
+
+    #[test]
+    fn collapsed_by_default_and_expandable_down_to_files() {
+        let graph = sample();
+        let closed = aggregate(&graph, &HashSet::new());
+        let ids: Vec<&str> = closed.nodes.iter().map(|n| n.id.as_str()).collect();
+        assert_eq!(ids, vec!["README.ts", "src"]);
+        assert_eq!(closed.max_depth, 2);
+        assert_eq!(closed.dirs, vec!["src", "src/a", "src/b"]);
+
+        let open: HashSet<String> = ["src".to_string()].into();
+        let folders = aggregate(&graph, &open);
+        assert_eq!(folders.nodes.len(), 3);
+        assert_eq!(folders.edges.len(), 1);
+        assert_eq!(folders.edges[0].weight, 2);
+
+        let files: HashSet<String> = ["src".to_string(), "src/a".to_string()].into();
+        let deep = aggregate(&graph, &files);
+        assert!(
+            deep.nodes
+                .iter()
+                .any(|n| n.id == "src/a/x.ts" && n.kind == "file")
+        );
+        assert!(deep.nodes.iter().any(|n| n.id == "src/b" && n.kind == "dir"));
+    }
+
+    #[test]
+    fn impact_follows_dependents_transitively() {
+        let graph = sample();
+        // z lo importan x e y; x importa a y, así que cambiar z afecta a x e y.
+        assert_eq!(
+            impact_of(&graph, &["src/b/z.ts".to_string()]),
+            vec!["src/a/x.ts", "src/a/y.ts"]
+        );
+        assert_eq!(
+            impact_of(&graph, &["src/a/x.ts".to_string()]),
+            Vec::<String>::new()
+        );
+        assert_eq!(impact_of(&graph, &["nope.ts".to_string()]), Vec::<String>::new());
     }
 }

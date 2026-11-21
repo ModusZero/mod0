@@ -52,10 +52,42 @@ fn default_args(kind: ShellKind) -> Vec<String> {
     }
 }
 
+/// Ubica un ejecutable como lo haría la shell: ruta directa o búsqueda en `PATH` (con `PATHEXT` en Windows).
+pub fn find_executable(command: &str) -> Option<PathBuf> {
+    let command = command.trim();
+    if command.is_empty() {
+        return None;
+    }
+
+    let direct = Path::new(command);
+    if direct.components().count() > 1 {
+        return direct.is_file().then(|| direct.to_path_buf());
+    }
+
+    let extensions: Vec<String> = if cfg!(windows) {
+        std::env::var("PATHEXT")
+            .unwrap_or_else(|_| ".COM;.EXE;.BAT;.CMD".into())
+            .split(';')
+            .filter(|ext| !ext.is_empty())
+            .map(str::to_lowercase)
+            .collect()
+    } else {
+        Vec::new()
+    };
+
+    std::env::split_paths(&std::env::var_os("PATH")?).find_map(|dir| {
+        let plain = dir.join(command);
+        if plain.is_file() {
+            return Some(plain);
+        }
+        extensions
+            .iter()
+            .find_map(|ext| Some(dir.join(format!("{command}{ext}"))).filter(|path| path.is_file()))
+    })
+}
+
 fn in_path(executable: &str) -> bool {
-    std::env::var_os("PATH")
-        .map(|paths| std::env::split_paths(&paths).any(|dir| dir.join(executable).is_file()))
-        .unwrap_or(false)
+    find_executable(executable).is_some()
 }
 
 /// Elige la shell: la del usuario si la configuró; PowerShell 7 o 5 en Windows; `$SHELL` en el resto.
@@ -84,6 +116,28 @@ pub fn detect_shell(config: &AppConfig) -> (String, ShellKind, Vec<String>) {
         .unwrap_or_else(|| "/bin/bash".into());
     let kind = kind_of(&program);
     (program, kind, default_args(kind))
+}
+
+/// Nombre de la variable de entorno del sistema a la que apunta un valor `$NOMBRE` o `${NOMBRE}`.
+pub fn env_reference(value: &str) -> Option<&str> {
+    let name = value.trim().strip_prefix('$')?;
+    let name = name
+        .strip_prefix('{')
+        .and_then(|rest| rest.strip_suffix('}'))
+        .unwrap_or(name);
+    let valid = !name.is_empty()
+        && !name.starts_with(|c: char| c.is_ascii_digit())
+        && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_');
+    valid.then_some(name)
+}
+
+/// Los valores `$NOMBRE` se leen de las variables de entorno del sistema al lanzar la sesión: así las claves
+/// de API viven en el entorno del usuario y no en `config.json`.
+fn resolve_env_value(value: &str) -> String {
+    match env_reference(value) {
+        Some(name) => std::env::var(name).unwrap_or_default(),
+        None => value.to_string(),
+    }
 }
 
 fn needs_quotes(arg: &str) -> bool {
@@ -147,7 +201,7 @@ pub fn plan(input: LaunchInput) -> AppResult<LaunchPlan> {
     if let Some(url) = hook_url {
         env.push(("MOD0_HOOK_URL".to_string(), url));
     }
-    env.extend(profile.env.iter().map(|(k, v)| (k.clone(), v.clone())));
+    env.extend(profile.env.iter().map(|(k, v)| (k.clone(), resolve_env_value(v))));
 
     let mut tokens: Vec<String> = Vec::new();
     if !profile.command.trim().is_empty() {
@@ -224,6 +278,16 @@ mod tests {
             command_line(&["claude".to_string()], ShellKind::PowerShell),
             "claude"
         );
+    }
+
+    #[test]
+    fn env_references_are_recognized() {
+        assert_eq!(env_reference("$OPENROUTER_API_KEY"), Some("OPENROUTER_API_KEY"));
+        assert_eq!(env_reference("${Z_AI_KEY}"), Some("Z_AI_KEY"));
+        assert_eq!(env_reference("literal"), None);
+        assert_eq!(env_reference("$1abc"), None);
+        assert_eq!(env_reference("$"), None);
+        assert_eq!(resolve_env_value("sin-referencia"), "sin-referencia");
     }
 
     #[test]

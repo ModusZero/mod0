@@ -8,7 +8,7 @@ use serde_json::Value;
 use tauri::{AppHandle, Emitter};
 
 use super::launcher::{self, LaunchInput};
-use super::model::{CreateSessionRequest, NowInfo, Session, SessionKpis, SessionStatus};
+use super::model::{CreateSessionRequest, NowInfo, PlanItem, Session, SessionKpis, SessionStatus};
 use super::profile::CliProfile;
 use crate::config::ConfigStore;
 use crate::core::error::{AppError, AppResult};
@@ -234,6 +234,7 @@ impl SessionManager {
                 created_at: now,
                 now: None,
                 kpis: SessionKpis::default(),
+                plan: Vec::new(),
                 model: None,
                 last_message: None,
                 claude_session_id: None,
@@ -623,6 +624,28 @@ struct Outcome {
     refresh: bool,
 }
 
+/// Extrae el checklist de una llamada a `TodoWrite` (`tool_input.todos`).
+fn parse_plan(input: &Value) -> Vec<PlanItem> {
+    input
+        .get("todos")
+        .and_then(Value::as_array)
+        .map(|todos| {
+            todos
+                .iter()
+                .filter_map(|todo| {
+                    let content = todo.get("content").and_then(Value::as_str)?.trim();
+                    let status = todo.get("status").and_then(Value::as_str).unwrap_or("pending");
+                    (!content.is_empty()).then(|| PlanItem {
+                        content: truncate(content, 160),
+                        status: status.to_string(),
+                    })
+                })
+                .take(40)
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
 fn is_write_tool(tool: &str) -> bool {
     matches!(tool, "Edit" | "MultiEdit" | "Write" | "NotebookEdit")
 }
@@ -713,6 +736,10 @@ fn reduce(runtime: &mut Runtime, payload: &Value, now: i64) -> Outcome {
                 target: info.target.clone(),
             });
             set_status(session, SessionStatus::Working);
+
+            if tool == "TodoWrite" {
+                session.plan = parse_plan(&tool_input);
+            }
 
             if is_write_tool(tool) {
                 if let Some(target) = info.target {
@@ -832,6 +859,7 @@ mod tests {
             created_at: 0,
             now: None,
             kpis: SessionKpis::default(),
+            plan: Vec::new(),
             model: None,
             last_message: None,
             claude_session_id: None,
@@ -897,6 +925,27 @@ mod tests {
         assert_eq!(rt.session.status, SessionStatus::Review);
         assert!(out.refresh && out.save_graph);
         assert_eq!(rt.graph.nodes().len(), 4);
+    }
+
+    #[test]
+    fn todowrite_updates_the_session_plan() {
+        let mut rt = runtime();
+        reduce(
+            &mut rt,
+            &json!({
+                "hook_event_name": "PreToolUse",
+                "tool_name": "TodoWrite",
+                "tool_use_id": "p1",
+                "tool_input": { "todos": [
+                    { "content": "Leer el módulo", "status": "completed" },
+                    { "content": "Implementar rotación", "status": "in_progress" },
+                    { "content": "", "status": "pending" }
+                ] }
+            }),
+            1,
+        );
+        assert_eq!(rt.session.plan.len(), 2);
+        assert_eq!(rt.session.plan[1].status, "in_progress");
     }
 
     #[test]

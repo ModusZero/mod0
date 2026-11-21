@@ -42,6 +42,15 @@ pub struct SessionKpis {
     pub context_tokens: u64,
 }
 
+/// Un punto del plan que la IA mantiene con la herramienta `TodoWrite`.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct PlanItem {
+    pub content: String,
+    /// `pending`, `in_progress` o `completed`.
+    pub status: String,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Session {
@@ -59,6 +68,9 @@ pub struct Session {
     pub created_at: i64,
     pub now: Option<NowInfo>,
     pub kpis: SessionKpis,
+    /// Plan actual de la IA (checklist). Vacío si la CLI no usa `TodoWrite`.
+    #[serde(default)]
+    pub plan: Vec<PlanItem>,
     pub model: Option<String>,
     pub last_message: Option<String>,
     pub claude_session_id: Option<String>,
